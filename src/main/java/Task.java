@@ -25,6 +25,29 @@ public class Task {
     }
 
     /**
+     * Returns the icon used to show the type of this task.
+     *
+     * <p>The base task keeps the original display format for backwards
+     * compatibility. Concrete task types override this method when they have
+     * a type icon.</p>
+     *
+     * @return an empty string for a general task
+     */
+    public String getTypeIcon() {
+        return "";
+    }
+
+    /**
+     * Returns this task in the original Sumo display format.
+     *
+     * @return the formatted task
+     */
+    @Override
+    public String toString() {
+        return "[" + getStatusIcon() + "] " + getDescription();
+    }
+
+    /**
      * Marks this task as done.
      */
     public void markAsDone() {

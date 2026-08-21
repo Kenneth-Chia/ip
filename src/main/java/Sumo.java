@@ -34,23 +34,27 @@ public class Sumo {
             if (command.equals("list")) {
                 System.out.println(" Here are the tasks in your list:");
                 for (int i = 0; i < taskCount; i++) {
-                    System.out.println(" " + (i + 1) + ".[" + tasks[i].getStatusIcon() + "] "
-                            + tasks[i].getDescription());
+                    System.out.println(" " + (i + 1) + "." + tasks[i]);
                 }
             } else if (command.startsWith("mark ")) {
                 int taskNumber = Integer.parseInt(command.substring(5));
                 int taskIndex = taskNumber - 1;
                 tasks[taskIndex].markAsDone();
                 System.out.println(" Nice! I've marked this task as done:");
-                System.out.println("   [" + tasks[taskIndex].getStatusIcon() + "] "
-                        + tasks[taskIndex].getDescription());
+                System.out.println("   " + tasks[taskIndex]);
             } else if (command.startsWith("unmark ")) {
                 int taskNumber = Integer.parseInt(command.substring(7));
                 int taskIndex = taskNumber - 1;
                 tasks[taskIndex].markAsNotDone();
                 System.out.println(" OK, I've marked this task as not done yet:");
-                System.out.println("   [" + tasks[taskIndex].getStatusIcon() + "] "
-                        + tasks[taskIndex].getDescription());
+                System.out.println("   " + tasks[taskIndex]);
+            } else if (command.startsWith("todo ")) {
+                String description = command.substring(5);
+                tasks[taskCount] = new Todo(description);
+                taskCount++;
+                System.out.println(" Got it. I've added this task:");
+                System.out.println("   " + tasks[taskCount - 1]);
+                System.out.println(" Now you have " + taskCount + " tasks in the list.");
             } else {
                 tasks[taskCount] = new Task(command);
                 taskCount++;

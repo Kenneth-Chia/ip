@@ -1,7 +1,7 @@
 import java.util.Scanner;
 
 /**
- * Starts Sumo and handles commands entered by the user.
+ * Starts Sumo and stores task text entered by the user.
  */
 public class Sumo {
     public static void main(String[] args) {
@@ -11,6 +11,8 @@ public class Sumo {
                 + " █████   ██    ██ ██ ████ ██ ██    ██\n"
                 + "     ██  ██    ██ ██  ██  ██ ██    ██\n"
                 + "██████    ██████  ██      ██  ██████";
+        String[] tasks = new String[100];
+        int taskCount = 0;
 
         System.out.println(separator);
         System.out.println(banner);
@@ -29,7 +31,16 @@ public class Sumo {
                 break;
             }
 
-            System.out.println(" " + command);
+            if (command.equals("list")) {
+                for (int i = 0; i < taskCount; i++) {
+                    System.out.println(" " + (i + 1) + ". " + tasks[i]);
+                }
+            } else {
+                tasks[taskCount] = command;
+                taskCount++;
+                System.out.println(" added: " + command);
+            }
+
             System.out.println(separator);
         }
     }

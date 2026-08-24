@@ -6,7 +6,7 @@ This file is the source of truth for the `test-ui` skill. Keep test cases determ
 
 - Working directory: repository root
 - Java version: 25
-- Setup/compile command: `javac -d out src/main/java/Deadline.java src/main/java/Event.java src/main/java/Sumo.java src/main/java/Task.java src/main/java/Todo.java`
+- Setup/compile command: `javac -d out src/main/java/Deadline.java src/main/java/Event.java src/main/java/Sumo.java src/main/java/SumoException.java src/main/java/Task.java src/main/java/Todo.java`
 - Program launch command: `java -cp out Sumo`
 - Output comparison: exact, after normalizing Windows `CRLF` line endings to `LF`; each expected block contains only the response produced after its listed input
 - Test isolation: launch a fresh program process for each test case unless a case explicitly requires one continuous session
@@ -101,6 +101,71 @@ This file is the source of truth for the `test-ui` skill. Keep test cases determ
      ```
 
 - Notes: Run all four inputs in one continuous process so the task state is preserved.
+
+### UI-003 — Explain invalid commands
+
+- Aim: Verify that invalid input is handled through a user-friendly error message and does not end the program.
+- Inputs, commands, and expected output:
+
+  1. Command/input: `todo`
+
+     Expected output:
+
+     ```text
+     ____________________________________________________________
+      I could not complete that command: Please add a description after 'todo'.
+     ____________________________________________________________
+     ```
+
+  2. Command/input: `blah`
+
+     Expected output:
+
+     ```text
+     ____________________________________________________________
+      I could not complete that command: I do not recognise that command. Try todo, deadline, event, list, mark, or unmark.
+     ____________________________________________________________
+     ```
+
+  3. Command/input: `deadline submit report`
+
+     Expected output:
+
+     ```text
+     ____________________________________________________________
+      I could not complete that command: Use: deadline <description> /by <date>.
+     ____________________________________________________________
+     ```
+
+  4. Command/input: `event meeting /from Monday`
+
+     Expected output:
+
+     ```text
+     ____________________________________________________________
+      I could not complete that command: Use: event <description> /from <start> /to <end>.
+     ____________________________________________________________
+     ```
+
+  5. Command/input: `mark one`
+
+     Expected output:
+
+     ```text
+     ____________________________________________________________
+      I could not complete that command: Task numbers must be whole numbers.
+     ____________________________________________________________
+     ```
+
+  6. Command/input: `bye`
+
+     Expected output:
+
+     ```text
+     ____________________________________________________________
+     Bye. Hope to see you again soon!
+     ____________________________________________________________
+     ```
 
 ## Latest test session
 
@@ -211,3 +276,88 @@ ____________________________________________________________
 ```
 
 Result: All listed test cases passed under Java 25.0.4 after updating `AGENTS.md`.
+
+### 2026-08-24 — PASS (error-handling verification)
+
+Transcript:
+
+```text
+$ javac -d out src/main/java/Deadline.java src/main/java/Event.java src/main/java/Sumo.java src/main/java/SumoException.java src/main/java/Task.java src/main/java/Todo.java
+
+### UI-001 — Add and list a todo
+> todo read book
+____________________________________________________________
+ Got it. I've added this task:
+   [T][ ] read book
+ Now you have 1 tasks in the list.
+____________________________________________________________
+
+> list
+____________________________________________________________
+ Here are the tasks in your list:
+ 1.[T][ ] read book
+____________________________________________________________
+
+> bye
+____________________________________________________________
+Bye. Hope to see you again soon!
+____________________________________________________________
+
+### UI-002 — Mark and unmark a task
+> todo return book
+____________________________________________________________
+ Got it. I've added this task:
+   [T][ ] return book
+ Now you have 1 tasks in the list.
+____________________________________________________________
+
+> mark 1
+____________________________________________________________
+ Nice! I've marked this task as done:
+   [T][X] return book
+____________________________________________________________
+
+> unmark 1
+____________________________________________________________
+ OK, I've marked this task as not done yet:
+   [T][ ] return book
+____________________________________________________________
+
+> bye
+____________________________________________________________
+Bye. Hope to see you again soon!
+____________________________________________________________
+
+### UI-003 — Explain invalid commands
+> todo
+____________________________________________________________
+ I could not complete that command: Please add a description after 'todo'.
+____________________________________________________________
+
+> blah
+____________________________________________________________
+ I could not complete that command: I do not recognise that command. Try todo, deadline, event, list, mark, or unmark.
+____________________________________________________________
+
+> deadline submit report
+____________________________________________________________
+ I could not complete that command: Use: deadline <description> /by <date>.
+____________________________________________________________
+
+> event meeting /from Monday
+____________________________________________________________
+ I could not complete that command: Use: event <description> /from <start> /to <end>.
+____________________________________________________________
+
+> mark one
+____________________________________________________________
+ I could not complete that command: Task numbers must be whole numbers.
+____________________________________________________________
+
+> bye
+____________________________________________________________
+Bye. Hope to see you again soon!
+____________________________________________________________
+```
+
+Result: All listed test cases passed under Java 25.0.4.

@@ -1,3 +1,5 @@
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
 /**
@@ -11,8 +13,7 @@ public class Sumo {
                 + " █████   ██    ██ ██ ████ ██ ██    ██\n"
                 + "     ██  ██    ██ ██  ██  ██ ██    ██\n"
                 + "██████    ██████  ██      ██  ██████";
-        Task[] tasks = new Task[100];
-        int taskCount = 0;
+        List<Task> tasks = new ArrayList<>();
 
         System.out.println(separator);
         System.out.println(banner);
@@ -32,7 +33,7 @@ public class Sumo {
             }
 
             try {
-                taskCount = handleCommand(command, tasks, taskCount);
+                handleCommand(command, tasks);
             } catch (SumoException exception) {
                 System.out.println(" I could not complete that command: " + exception.getMessage());
             }
@@ -42,62 +43,66 @@ public class Sumo {
     }
 
     /**
-     * Carries out one non-exit command and returns the resulting number of tasks.
+     * Carries out one non-exit command.
      *
      * @param command the command entered by the user
      * @param tasks the task list
-     * @param taskCount the number of tasks currently stored
-     * @return the updated number of tasks
      * @throws SumoException if the command is not valid
      */
-    private static int handleCommand(String command, Task[] tasks, int taskCount) throws SumoException {
+    private static void handleCommand(String command, List<Task> tasks) throws SumoException {
         if (command.equals("list")) {
             System.out.println(" Here are the tasks in your list:");
-            for (int i = 0; i < taskCount; i++) {
-                System.out.println(" " + (i + 1) + "." + tasks[i]);
+            for (int i = 0; i < tasks.size(); i++) {
+                System.out.println(" " + (i + 1) + "." + tasks.get(i));
             }
-            return taskCount;
+            return;
         }
 
         if (command.equals("mark") || command.startsWith("mark ")) {
-            int taskIndex = getTaskIndex(command.substring(4).trim(), taskCount);
-            tasks[taskIndex].markAsDone();
+            int taskIndex = getTaskIndex(command.substring(4).trim(), tasks.size());
+            tasks.get(taskIndex).markAsDone();
             System.out.println(" Nice! I've marked this task as done:");
-            System.out.println("   " + tasks[taskIndex]);
-            return taskCount;
+            System.out.println("   " + tasks.get(taskIndex));
+            return;
         }
 
         if (command.equals("unmark") || command.startsWith("unmark ")) {
-            int taskIndex = getTaskIndex(command.substring(6).trim(), taskCount);
-            tasks[taskIndex].markAsNotDone();
+            int taskIndex = getTaskIndex(command.substring(6).trim(), tasks.size());
+            tasks.get(taskIndex).markAsNotDone();
             System.out.println(" OK, I've marked this task as not done yet:");
-            System.out.println("   " + tasks[taskIndex]);
-            return taskCount;
+            System.out.println("   " + tasks.get(taskIndex));
+            return;
         }
 
+        if (command.equals("delete") || command.startsWith("delete ")) {
+            int taskIndex = getTaskIndex(command.substring(6).trim(), tasks.size());
+            Task removedTask = tasks.remove(taskIndex);
+            System.out.println(" Noted. I've removed this task:");
+            System.out.println("   " + removedTask);
+            System.out.println(" Now you have " + tasks.size() + " tasks in the list.");
+            return;
+        }
+
+        Task addedTask;
         if (command.equals("todo") || command.startsWith("todo ")) {
             String description = command.substring(4).trim();
             ensureNotBlank(description, "Please add a description after 'todo'.");
-            ensureTaskSpace(taskCount, tasks.length);
-            tasks[taskCount] = new Todo(description);
+            addedTask = new Todo(description);
         } else if (command.equals("deadline") || command.startsWith("deadline ")) {
             String[] deadlineParts = splitCommand(command.substring(8).trim(), " /by ",
                     "Use: deadline <description> /by <date>.");
-            ensureTaskSpace(taskCount, tasks.length);
-            tasks[taskCount] = new Deadline(deadlineParts[0], deadlineParts[1]);
+            addedTask = new Deadline(deadlineParts[0], deadlineParts[1]);
         } else if (command.equals("event") || command.startsWith("event ")) {
             String[] eventParts = splitEvent(command.substring(5).trim());
-            ensureTaskSpace(taskCount, tasks.length);
-            tasks[taskCount] = new Event(eventParts[0], eventParts[1], eventParts[2]);
+            addedTask = new Event(eventParts[0], eventParts[1], eventParts[2]);
         } else {
-            throw new SumoException("I do not recognise that command. Try todo, deadline, event, list, mark, or unmark.");
+            throw new SumoException("I do not recognise that command. Try todo, deadline, event, list, mark, unmark, or delete.");
         }
 
+        tasks.add(addedTask);
         System.out.println(" Got it. I've added this task:");
-        System.out.println("   " + tasks[taskCount]);
-        taskCount++;
-        System.out.println(" Now you have " + taskCount + " tasks in the list.");
-        return taskCount;
+        System.out.println("   " + addedTask);
+        System.out.println(" Now you have " + tasks.size() + " tasks in the list.");
     }
 
     /**
@@ -185,16 +190,4 @@ public class Sumo {
         }
     }
 
-    /**
-     * Ensures that another task can be stored in the fixed-size task list.
-     *
-     * @param taskCount the current number of tasks
-     * @param capacity the maximum number of tasks
-     * @throws SumoException if the list is full
-     */
-    private static void ensureTaskSpace(int taskCount, int capacity) throws SumoException {
-        if (taskCount >= capacity) {
-            throw new SumoException("Your task list is full, so I cannot add another task.");
-        }
-    }
 }

@@ -35,6 +35,16 @@ public class Deadline extends Task {
     }
 
     /**
+     * Returns this deadline in the line-based format used for persistent storage.
+     *
+     * @return the task type, completion status, description, and deadline
+     */
+    @Override
+    public String toDataString() {
+        return super.toDataString() + " | " + by;
+    }
+
+    /**
      * Returns this deadline in the format used by Sumo's task list.
      *
      * @return the formatted deadline

@@ -47,6 +47,16 @@ public class Event extends Task {
     }
 
     /**
+     * Returns this event in the line-based format used for persistent storage.
+     *
+     * @return the task type, completion status, description, start, and end
+     */
+    @Override
+    public String toDataString() {
+        return super.toDataString() + " | " + from + " | " + to;
+    }
+
+    /**
      * Returns this event in the format used by Sumo's task list.
      *
      * @return the formatted event

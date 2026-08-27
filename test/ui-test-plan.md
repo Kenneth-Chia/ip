@@ -9,7 +9,7 @@ This file is the source of truth for the `test-ui` skill. Keep test cases determ
 - Setup/compile command: `javac -d out src/main/java/Deadline.java src/main/java/Event.java src/main/java/Sumo.java src/main/java/SumoException.java src/main/java/Task.java src/main/java/Todo.java`
 - Program launch command: `java -cp out Sumo`
 - Output comparison: exact, after normalizing Windows `CRLF` line endings to `LF`; each expected block contains only the response produced after its listed input
-- Test isolation: launch a fresh program process for each test case unless a case explicitly requires one continuous session
+- Test isolation: before each test case, run `Remove-Item -LiteralPath data/sumo.txt -ErrorAction SilentlyContinue`, then launch a fresh program process unless the case explicitly requires multiple continuous sessions
 
 ## Test cases
 
@@ -231,6 +231,226 @@ This file is the source of truth for the `test-ui` skill. Keep test cases determ
 
 - Notes: Run all five inputs in one continuous process so the task collection is preserved.
 
+### UI-005 — Save every task-list change
+
+- Aim: Verify that adding, marking, unmarking, and deleting tasks immediately rewrites `data/sumo.txt`.
+- Inputs, commands, and expected output:
+
+  1. Command/input: `todo read book`
+
+     Expected output:
+
+     ```text
+     ____________________________________________________________
+      Got it. I've added this task:
+        [T][ ] read book
+      Now you have 1 tasks in the list.
+     ____________________________________________________________
+     ```
+
+     Expected `data/sumo.txt` content immediately after the command:
+
+     ```text
+     T | 0 | read book
+     ```
+
+  2. Command/input: `deadline return book /by June 6th`
+
+     Expected output:
+
+     ```text
+     ____________________________________________________________
+      Got it. I've added this task:
+        [D][ ] return book (by: June 6th)
+      Now you have 2 tasks in the list.
+     ____________________________________________________________
+     ```
+
+     Expected `data/sumo.txt` content immediately after the command:
+
+     ```text
+     T | 0 | read book
+     D | 0 | return book | June 6th
+     ```
+
+  3. Command/input: `event project meeting /from Aug 6th 2pm /to 4pm`
+
+     Expected output:
+
+     ```text
+     ____________________________________________________________
+      Got it. I've added this task:
+        [E][ ] project meeting (from: Aug 6th 2pm to: 4pm)
+      Now you have 3 tasks in the list.
+     ____________________________________________________________
+     ```
+
+     Expected `data/sumo.txt` content immediately after the command:
+
+     ```text
+     T | 0 | read book
+     D | 0 | return book | June 6th
+     E | 0 | project meeting | Aug 6th 2pm | 4pm
+     ```
+
+  4. Command/input: `mark 1`
+
+     Expected output:
+
+     ```text
+     ____________________________________________________________
+      Nice! I've marked this task as done:
+        [T][X] read book
+     ____________________________________________________________
+     ```
+
+     Expected `data/sumo.txt` content immediately after the command:
+
+     ```text
+     T | 1 | read book
+     D | 0 | return book | June 6th
+     E | 0 | project meeting | Aug 6th 2pm | 4pm
+     ```
+
+  5. Command/input: `unmark 1`
+
+     Expected output:
+
+     ```text
+     ____________________________________________________________
+      OK, I've marked this task as not done yet:
+        [T][ ] read book
+     ____________________________________________________________
+     ```
+
+     Expected `data/sumo.txt` content immediately after the command:
+
+     ```text
+     T | 0 | read book
+     D | 0 | return book | June 6th
+     E | 0 | project meeting | Aug 6th 2pm | 4pm
+     ```
+
+  6. Command/input: `delete 2`
+
+     Expected output:
+
+     ```text
+     ____________________________________________________________
+      Noted. I've removed this task:
+        [D][ ] return book (by: June 6th)
+      Now you have 2 tasks in the list.
+     ____________________________________________________________
+     ```
+
+     Expected `data/sumo.txt` content immediately after the command:
+
+     ```text
+     T | 0 | read book
+     E | 0 | project meeting | Aug 6th 2pm | 4pm
+     ```
+
+  7. Command/input: `bye`
+
+     Expected output:
+
+     ```text
+     ____________________________________________________________
+     Bye. Hope to see you again soon!
+     ____________________________________________________________
+     ```
+
+- Notes: Run all seven inputs in one continuous process. After each of the first six inputs, inspect the file before sending the next input.
+
+### UI-006 — Load tasks on restart
+
+- Aim: Verify that restarting Sumo reconstructs every task type, its details, and its completion status from `data/sumo.txt`.
+- First session inputs, commands, and expected output:
+
+  1. Command/input: `todo read book`
+
+     Expected output:
+
+     ```text
+     ____________________________________________________________
+      Got it. I've added this task:
+        [T][ ] read book
+      Now you have 1 tasks in the list.
+     ____________________________________________________________
+     ```
+
+  2. Command/input: `deadline return book /by June 6th`
+
+     Expected output:
+
+     ```text
+     ____________________________________________________________
+      Got it. I've added this task:
+        [D][ ] return book (by: June 6th)
+      Now you have 2 tasks in the list.
+     ____________________________________________________________
+     ```
+
+  3. Command/input: `event project meeting /from Aug 6th 2pm /to 4pm`
+
+     Expected output:
+
+     ```text
+     ____________________________________________________________
+      Got it. I've added this task:
+        [E][ ] project meeting (from: Aug 6th 2pm to: 4pm)
+      Now you have 3 tasks in the list.
+     ____________________________________________________________
+     ```
+
+  4. Command/input: `mark 2`
+
+     Expected output:
+
+     ```text
+     ____________________________________________________________
+      Nice! I've marked this task as done:
+        [D][X] return book (by: June 6th)
+     ____________________________________________________________
+     ```
+
+  5. Command/input: `bye`
+
+     Expected output:
+
+     ```text
+     ____________________________________________________________
+     Bye. Hope to see you again soon!
+     ____________________________________________________________
+     ```
+
+- Second session inputs, commands, and expected output:
+
+  1. Command/input: `list`
+
+     Expected output:
+
+     ```text
+     ____________________________________________________________
+      Here are the tasks in your list:
+      1.[T][ ] read book
+      2.[D][X] return book (by: June 6th)
+      3.[E][ ] project meeting (from: Aug 6th 2pm to: 4pm)
+     ____________________________________________________________
+     ```
+
+  2. Command/input: `bye`
+
+     Expected output:
+
+     ```text
+     ____________________________________________________________
+     Bye. Hope to see you again soon!
+     ____________________________________________________________
+     ```
+
+- Notes: End the first process after `bye`, then launch a second process without deleting or changing `data/sumo.txt` between the two sessions.
+
 ## Latest test session
 
 Leave the test cases and expected outputs above unchanged when recording a run. Add a dated session below with the actual console transcript, overall result, and—if applicable—the first failure’s actual and expected output.
@@ -288,6 +508,387 @@ ____________________________________________________________
 ```
 
 Result: All listed test cases passed under Java 25.0.4.
+
+### 2026-08-27 — PASS (read-on-startup verification)
+
+Transcript:
+
+```text
+$ java -version
+java version "25.0.4" 2026-07-21 LTS
+
+$ javac -d out src/main/java/Deadline.java src/main/java/Event.java src/main/java/Sumo.java src/main/java/SumoException.java src/main/java/Task.java src/main/java/Todo.java
+
+### UI-001 — Add and list a todo
+$ Remove-Item -LiteralPath data/sumo.txt -ErrorAction SilentlyContinue
+> todo read book
+____________________________________________________________
+ Got it. I've added this task:
+   [T][ ] read book
+ Now you have 1 tasks in the list.
+____________________________________________________________
+> list
+____________________________________________________________
+ Here are the tasks in your list:
+ 1.[T][ ] read book
+____________________________________________________________
+> bye
+____________________________________________________________
+Bye. Hope to see you again soon!
+____________________________________________________________
+
+### UI-002 — Mark and unmark a task
+$ Remove-Item -LiteralPath data/sumo.txt -ErrorAction SilentlyContinue
+> todo return book
+____________________________________________________________
+ Got it. I've added this task:
+   [T][ ] return book
+ Now you have 1 tasks in the list.
+____________________________________________________________
+> mark 1
+____________________________________________________________
+ Nice! I've marked this task as done:
+   [T][X] return book
+____________________________________________________________
+> unmark 1
+____________________________________________________________
+ OK, I've marked this task as not done yet:
+   [T][ ] return book
+____________________________________________________________
+> bye
+____________________________________________________________
+Bye. Hope to see you again soon!
+____________________________________________________________
+
+### UI-003 — Explain invalid commands
+$ Remove-Item -LiteralPath data/sumo.txt -ErrorAction SilentlyContinue
+> todo
+____________________________________________________________
+ I could not complete that command: Please add a description after 'todo'.
+____________________________________________________________
+> blah
+____________________________________________________________
+ I could not complete that command: I do not recognise that command. Try todo, deadline, event, list, mark, unmark, or delete.
+____________________________________________________________
+> deadline submit report
+____________________________________________________________
+ I could not complete that command: Use: deadline <description> /by <date>.
+____________________________________________________________
+> event meeting /from Monday
+____________________________________________________________
+ I could not complete that command: Use: event <description> /from <start> /to <end>.
+____________________________________________________________
+> mark one
+____________________________________________________________
+ I could not complete that command: Task numbers must be whole numbers.
+____________________________________________________________
+> bye
+____________________________________________________________
+Bye. Hope to see you again soon!
+____________________________________________________________
+
+### UI-004 — Delete a task
+$ Remove-Item -LiteralPath data/sumo.txt -ErrorAction SilentlyContinue
+> todo read book
+____________________________________________________________
+ Got it. I've added this task:
+   [T][ ] read book
+ Now you have 1 tasks in the list.
+____________________________________________________________
+> deadline return book /by June 6th
+____________________________________________________________
+ Got it. I've added this task:
+   [D][ ] return book (by: June 6th)
+ Now you have 2 tasks in the list.
+____________________________________________________________
+> delete 1
+____________________________________________________________
+ Noted. I've removed this task:
+   [T][ ] read book
+ Now you have 1 tasks in the list.
+____________________________________________________________
+> list
+____________________________________________________________
+ Here are the tasks in your list:
+ 1.[D][ ] return book (by: June 6th)
+____________________________________________________________
+> bye
+____________________________________________________________
+Bye. Hope to see you again soon!
+____________________________________________________________
+
+### UI-005 — Save every task-list change
+$ Remove-Item -LiteralPath data/sumo.txt -ErrorAction SilentlyContinue
+> todo read book
+____________________________________________________________
+ Got it. I've added this task:
+   [T][ ] read book
+ Now you have 1 tasks in the list.
+____________________________________________________________
+$ Get-Content data/sumo.txt
+T | 0 | read book
+> deadline return book /by June 6th
+____________________________________________________________
+ Got it. I've added this task:
+   [D][ ] return book (by: June 6th)
+ Now you have 2 tasks in the list.
+____________________________________________________________
+$ Get-Content data/sumo.txt
+T | 0 | read book
+D | 0 | return book | June 6th
+> event project meeting /from Aug 6th 2pm /to 4pm
+____________________________________________________________
+ Got it. I've added this task:
+   [E][ ] project meeting (from: Aug 6th 2pm to: 4pm)
+ Now you have 3 tasks in the list.
+____________________________________________________________
+$ Get-Content data/sumo.txt
+T | 0 | read book
+D | 0 | return book | June 6th
+E | 0 | project meeting | Aug 6th 2pm | 4pm
+> mark 1
+____________________________________________________________
+ Nice! I've marked this task as done:
+   [T][X] read book
+____________________________________________________________
+$ Get-Content data/sumo.txt
+T | 1 | read book
+D | 0 | return book | June 6th
+E | 0 | project meeting | Aug 6th 2pm | 4pm
+> unmark 1
+____________________________________________________________
+ OK, I've marked this task as not done yet:
+   [T][ ] read book
+____________________________________________________________
+$ Get-Content data/sumo.txt
+T | 0 | read book
+D | 0 | return book | June 6th
+E | 0 | project meeting | Aug 6th 2pm | 4pm
+> delete 2
+____________________________________________________________
+ Noted. I've removed this task:
+   [D][ ] return book (by: June 6th)
+ Now you have 2 tasks in the list.
+____________________________________________________________
+$ Get-Content data/sumo.txt
+T | 0 | read book
+E | 0 | project meeting | Aug 6th 2pm | 4pm
+> bye
+____________________________________________________________
+Bye. Hope to see you again soon!
+____________________________________________________________
+
+### UI-006 — Load tasks on restart
+$ Remove-Item -LiteralPath data/sumo.txt -ErrorAction SilentlyContinue
+
+First session:
+> todo read book
+____________________________________________________________
+ Got it. I've added this task:
+   [T][ ] read book
+ Now you have 1 tasks in the list.
+____________________________________________________________
+> deadline return book /by June 6th
+____________________________________________________________
+ Got it. I've added this task:
+   [D][ ] return book (by: June 6th)
+ Now you have 2 tasks in the list.
+____________________________________________________________
+> event project meeting /from Aug 6th 2pm /to 4pm
+____________________________________________________________
+ Got it. I've added this task:
+   [E][ ] project meeting (from: Aug 6th 2pm to: 4pm)
+ Now you have 3 tasks in the list.
+____________________________________________________________
+> mark 2
+____________________________________________________________
+ Nice! I've marked this task as done:
+   [D][X] return book (by: June 6th)
+____________________________________________________________
+> bye
+____________________________________________________________
+Bye. Hope to see you again soon!
+____________________________________________________________
+
+Second session:
+> list
+____________________________________________________________
+ Here are the tasks in your list:
+ 1.[T][ ] read book
+ 2.[D][X] return book (by: June 6th)
+ 3.[E][ ] project meeting (from: Aug 6th 2pm to: 4pm)
+____________________________________________________________
+> bye
+____________________________________________________________
+Bye. Hope to see you again soon!
+____________________________________________________________
+```
+
+Result: All six listed test cases passed under Java 25.0.4. UI-006 confirmed that tasks and completion state were reconstructed after restarting Sumo.
+
+### 2026-08-27 — PASS (write-only persistence verification)
+
+Transcript:
+
+```text
+$ javac -d out src/main/java/Deadline.java src/main/java/Event.java src/main/java/Sumo.java src/main/java/SumoException.java src/main/java/Task.java src/main/java/Todo.java
+
+### UI-001 — Add and list a todo
+> todo read book
+____________________________________________________________
+ Got it. I've added this task:
+   [T][ ] read book
+ Now you have 1 tasks in the list.
+____________________________________________________________
+> list
+____________________________________________________________
+ Here are the tasks in your list:
+ 1.[T][ ] read book
+____________________________________________________________
+> bye
+____________________________________________________________
+Bye. Hope to see you again soon!
+____________________________________________________________
+
+### UI-002 — Mark and unmark a task
+> todo return book
+____________________________________________________________
+ Got it. I've added this task:
+   [T][ ] return book
+ Now you have 1 tasks in the list.
+____________________________________________________________
+> mark 1
+____________________________________________________________
+ Nice! I've marked this task as done:
+   [T][X] return book
+____________________________________________________________
+> unmark 1
+____________________________________________________________
+ OK, I've marked this task as not done yet:
+   [T][ ] return book
+____________________________________________________________
+> bye
+____________________________________________________________
+Bye. Hope to see you again soon!
+____________________________________________________________
+
+### UI-003 — Explain invalid commands
+> todo
+____________________________________________________________
+ I could not complete that command: Please add a description after 'todo'.
+____________________________________________________________
+> blah
+____________________________________________________________
+ I could not complete that command: I do not recognise that command. Try todo, deadline, event, list, mark, unmark, or delete.
+____________________________________________________________
+> deadline submit report
+____________________________________________________________
+ I could not complete that command: Use: deadline <description> /by <date>.
+____________________________________________________________
+> event meeting /from Monday
+____________________________________________________________
+ I could not complete that command: Use: event <description> /from <start> /to <end>.
+____________________________________________________________
+> mark one
+____________________________________________________________
+ I could not complete that command: Task numbers must be whole numbers.
+____________________________________________________________
+> bye
+____________________________________________________________
+Bye. Hope to see you again soon!
+____________________________________________________________
+
+### UI-004 — Delete a task
+> todo read book
+____________________________________________________________
+ Got it. I've added this task:
+   [T][ ] read book
+ Now you have 1 tasks in the list.
+____________________________________________________________
+> deadline return book /by June 6th
+____________________________________________________________
+ Got it. I've added this task:
+   [D][ ] return book (by: June 6th)
+ Now you have 2 tasks in the list.
+____________________________________________________________
+> delete 1
+____________________________________________________________
+ Noted. I've removed this task:
+   [T][ ] read book
+ Now you have 1 tasks in the list.
+____________________________________________________________
+> list
+____________________________________________________________
+ Here are the tasks in your list:
+ 1.[D][ ] return book (by: June 6th)
+____________________________________________________________
+> bye
+____________________________________________________________
+Bye. Hope to see you again soon!
+____________________________________________________________
+
+### UI-005 — Save every task-list change
+> todo read book
+____________________________________________________________
+ Got it. I've added this task:
+   [T][ ] read book
+ Now you have 1 tasks in the list.
+____________________________________________________________
+$ Get-Content data/sumo.txt
+T | 0 | read book
+> deadline return book /by June 6th
+____________________________________________________________
+ Got it. I've added this task:
+   [D][ ] return book (by: June 6th)
+ Now you have 2 tasks in the list.
+____________________________________________________________
+$ Get-Content data/sumo.txt
+T | 0 | read book
+D | 0 | return book | June 6th
+> event project meeting /from Aug 6th 2pm /to 4pm
+____________________________________________________________
+ Got it. I've added this task:
+   [E][ ] project meeting (from: Aug 6th 2pm to: 4pm)
+ Now you have 3 tasks in the list.
+____________________________________________________________
+$ Get-Content data/sumo.txt
+T | 0 | read book
+D | 0 | return book | June 6th
+E | 0 | project meeting | Aug 6th 2pm | 4pm
+> mark 1
+____________________________________________________________
+ Nice! I've marked this task as done:
+   [T][X] read book
+____________________________________________________________
+$ Get-Content data/sumo.txt
+T | 1 | read book
+D | 0 | return book | June 6th
+E | 0 | project meeting | Aug 6th 2pm | 4pm
+> unmark 1
+____________________________________________________________
+ OK, I've marked this task as not done yet:
+   [T][ ] read book
+____________________________________________________________
+$ Get-Content data/sumo.txt
+T | 0 | read book
+D | 0 | return book | June 6th
+E | 0 | project meeting | Aug 6th 2pm | 4pm
+> delete 2
+____________________________________________________________
+ Noted. I've removed this task:
+   [D][ ] return book (by: June 6th)
+ Now you have 2 tasks in the list.
+____________________________________________________________
+$ Get-Content data/sumo.txt
+T | 0 | read book
+E | 0 | project meeting | Aug 6th 2pm | 4pm
+> bye
+____________________________________________________________
+Bye. Hope to see you again soon!
+____________________________________________________________
+```
+
+Result: All five listed test cases passed under Java 25.0.4. UI-005 confirmed that every task-list mutation immediately rewrote `data/sumo.txt` with the expected content.
 
 ### 2026-08-21 — PASS (post-agent-rule verification)
 

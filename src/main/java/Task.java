@@ -38,6 +38,15 @@ public class Task {
     }
 
     /**
+     * Returns this task in the line-based format used for persistent storage.
+     *
+     * @return the task type, completion status, and description
+     */
+    public String toDataString() {
+        return getTypeIcon() + " | " + (isDone ? "1" : "0") + " | " + getDescription();
+    }
+
+    /**
      * Returns this task in the original Sumo display format.
      *
      * @return the formatted task

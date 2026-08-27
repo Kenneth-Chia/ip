@@ -1,3 +1,7 @@
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -6,14 +10,16 @@ import java.util.Scanner;
  * Starts Sumo and stores task text entered by the user.
  */
 public class Sumo {
-    public static void main(String[] args) {
+    private static final Path DATA_FILE = Path.of("data", "sumo.txt");
+
+    public static void main(String[] args) throws IOException {
         String separator = "____________________________________________________________";
         String banner = " ██████  ██    ██ ███    ███  ██████\n"
                 + "██       ██    ██ ████  ████ ██    ██\n"
                 + " █████   ██    ██ ██ ████ ██ ██    ██\n"
                 + "     ██  ██    ██ ██  ██  ██ ██    ██\n"
                 + "██████    ██████  ██      ██  ██████";
-        List<Task> tasks = new ArrayList<>();
+        List<Task> tasks = loadTasks();
 
         System.out.println(separator);
         System.out.println(banner);
@@ -49,7 +55,7 @@ public class Sumo {
      * @param tasks the task list
      * @throws SumoException if the command is not valid
      */
-    private static void handleCommand(String command, List<Task> tasks) throws SumoException {
+    private static void handleCommand(String command, List<Task> tasks) throws SumoException, IOException {
         if (command.equals("list")) {
             System.out.println(" Here are the tasks in your list:");
             for (int i = 0; i < tasks.size(); i++) {
@@ -61,6 +67,7 @@ public class Sumo {
         if (command.equals("mark") || command.startsWith("mark ")) {
             int taskIndex = getTaskIndex(command.substring(4).trim(), tasks.size());
             tasks.get(taskIndex).markAsDone();
+            saveTasks(tasks);
             System.out.println(" Nice! I've marked this task as done:");
             System.out.println("   " + tasks.get(taskIndex));
             return;
@@ -69,6 +76,7 @@ public class Sumo {
         if (command.equals("unmark") || command.startsWith("unmark ")) {
             int taskIndex = getTaskIndex(command.substring(6).trim(), tasks.size());
             tasks.get(taskIndex).markAsNotDone();
+            saveTasks(tasks);
             System.out.println(" OK, I've marked this task as not done yet:");
             System.out.println("   " + tasks.get(taskIndex));
             return;
@@ -77,6 +85,7 @@ public class Sumo {
         if (command.equals("delete") || command.startsWith("delete ")) {
             int taskIndex = getTaskIndex(command.substring(6).trim(), tasks.size());
             Task removedTask = tasks.remove(taskIndex);
+            saveTasks(tasks);
             System.out.println(" Noted. I've removed this task:");
             System.out.println("   " + removedTask);
             System.out.println(" Now you have " + tasks.size() + " tasks in the list.");
@@ -100,9 +109,72 @@ public class Sumo {
         }
 
         tasks.add(addedTask);
+        saveTasks(tasks);
         System.out.println(" Got it. I've added this task:");
         System.out.println("   " + addedTask);
         System.out.println(" Now you have " + tasks.size() + " tasks in the list.");
+    }
+
+    /**
+     * Rewrites the data file so that it represents the current task list.
+     *
+     * @param tasks the current task list
+     * @throws IOException if the data directory or file cannot be written
+     */
+    private static void saveTasks(List<Task> tasks) throws IOException {
+        Files.createDirectories(DATA_FILE.getParent());
+        List<String> taskLines = tasks.stream()
+                .map(Task::toDataString)
+                .toList();
+        Files.write(DATA_FILE, taskLines, StandardCharsets.UTF_8);
+    }
+
+    /**
+     * Loads tasks from the data file, or returns an empty list on the first run.
+     *
+     * @return the tasks stored during the previous run
+     * @throws IOException if the existing data file cannot be read
+     */
+    private static List<Task> loadTasks() throws IOException {
+        List<Task> tasks = new ArrayList<>();
+        if (!Files.exists(DATA_FILE)) {
+            return tasks;
+        }
+
+        for (String taskLine : Files.readAllLines(DATA_FILE, StandardCharsets.UTF_8)) {
+            tasks.add(parseTask(taskLine));
+        }
+        return tasks;
+    }
+
+    /**
+     * Reconstructs one task from its stored type, status, and task-specific fields.
+     *
+     * @param taskLine one line from the data file
+     * @return the reconstructed task
+     */
+    private static Task parseTask(String taskLine) {
+        String[] taskData = taskLine.split(" \\| ", -1);
+        Task task;
+
+        switch (taskData[0]) {
+        case "T":
+            task = new Todo(taskData[2]);
+            break;
+        case "D":
+            task = new Deadline(taskData[2], taskData[3]);
+            break;
+        case "E":
+            task = new Event(taskData[2], taskData[3], taskData[4]);
+            break;
+        default:
+            throw new IllegalArgumentException("Unknown task type in data file: " + taskData[0]);
+        }
+
+        if (taskData[1].equals("1")) {
+            task.markAsDone();
+        }
+        return task;
     }
 
     /**

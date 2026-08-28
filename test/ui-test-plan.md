@@ -451,9 +451,94 @@ This file is the source of truth for the `test-ui` skill. Keep test cases determ
 
 - Notes: End the first process after `bye`, then launch a second process without deleting or changing `data/sumo.txt` between the two sessions.
 
+### UI-007 — Start without an existing data folder or file
+
+- Aim: Verify that Sumo starts with an empty task list and creates the relative `data` folder when neither the folder nor `data/sumo.txt` exists.
+- Setup: Before launching Sumo, run `Remove-Item -LiteralPath data -Recurse -Force -ErrorAction SilentlyContinue`.
+- Inputs, commands, and expected output:
+
+  1. Command/input: `list`
+
+     Expected output:
+
+     ```text
+     ____________________________________________________________
+      Here are the tasks in your list:
+     ____________________________________________________________
+     ```
+
+  2. Command/input: `bye`
+
+     Expected output:
+
+     ```text
+     ____________________________________________________________
+     Bye. Hope to see you again soon!
+     ____________________________________________________________
+     ```
+
+- Notes: Confirm that `data` exists after startup. The `sumo.txt` file is not required until a task-list change is saved.
+
 ## Latest test session
 
 Leave the test cases and expected outputs above unchanged when recording a run. Add a dated session below with the actual console transcript, overall result, and—if applicable—the first failure’s actual and expected output.
+
+### 2026-08-28 — PASS (relative-path and clean-start verification)
+
+Transcript:
+
+```text
+$ java -version
+java version "25.0.4" 2026-07-21 LTS
+
+$ javac -d out src/main/java/Deadline.java src/main/java/Event.java src/main/java/Sumo.java src/main/java/SumoException.java src/main/java/Task.java src/main/java/Todo.java
+
+### UI-001 — Add and list a todo
+> todo read book — exact expected response matched
+> list — exact expected response matched
+> bye — exact expected response matched
+
+### UI-002 — Mark and unmark a task
+> todo return book — exact expected response matched
+> mark 1 — exact expected response matched
+> unmark 1 — exact expected response matched
+> bye — exact expected response matched
+
+### UI-003 — Explain invalid commands
+> todo — exact expected response matched
+> blah — exact expected response matched
+> deadline submit report — exact expected response matched
+> event meeting /from Monday — exact expected response matched
+> mark one — exact expected response matched
+> bye — exact expected response matched
+
+### UI-004 — Delete a task
+> todo read book — exact expected response matched
+> deadline return book /by June 6th — exact expected response matched
+> delete 1 — exact expected response matched
+> list — exact expected response matched
+> bye — exact expected response matched
+
+### UI-005 — Save every task-list change
+> todo read book — exact response and file content matched
+> deadline return book /by June 6th — exact response and file content matched
+> event project meeting /from Aug 6th 2pm /to 4pm — exact response and file content matched
+> mark 1 — exact response and file content matched
+> unmark 1 — exact response and file content matched
+> delete 2 — exact response and file content matched
+> bye — exact expected response matched
+
+### UI-006 — Load tasks on restart
+> First session: todo, deadline, event, mark 2, bye — all exact responses matched
+> Second session: list, bye — all exact responses matched
+
+### UI-007 — Start without an existing data folder or file
+$ Remove-Item -LiteralPath data -Recurse -Force -ErrorAction SilentlyContinue
+> list — exact expected response matched; data directory created
+> bye — exact expected response matched
+```
+
+Result: All seven listed test cases passed under Java 25.0.4. UI-005 confirmed immediate persistence after each task-list mutation, and UI-007 confirmed startup succeeds when both the data folder and file are absent.
 
 ### 2026-08-21 — PASS
 

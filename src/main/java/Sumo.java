@@ -12,7 +12,11 @@ import java.util.Scanner;
  * Starts Sumo and stores task text entered by the user.
  */
 public class Sumo {
-    private static final Path DATA_FILE = Path.of("data", "sumo.txt");
+    /** Relative directory where Sumo stores its task data. */
+    private static final Path DATA_DIRECTORY = Path.of("data");
+
+    /** Relative, platform-independent path to Sumo's task data file. */
+    private static final Path DATA_FILE = DATA_DIRECTORY.resolve("sumo.txt");
 
     public static void main(String[] args) {
         String separator = "____________________________________________________________";
@@ -157,12 +161,11 @@ public class Sumo {
      * @throws IOException if the data directory or file cannot be written
      */
     private static void saveTasks(List<Task> tasks) throws IOException {
-        Path dataDirectory = DATA_FILE.getParent();
-        Files.createDirectories(dataDirectory);
+        Files.createDirectories(DATA_DIRECTORY);
         List<String> taskLines = tasks.stream()
                 .map(Task::toDataString)
                 .toList();
-        Path temporaryFile = Files.createTempFile(dataDirectory, "sumo-", ".tmp");
+        Path temporaryFile = Files.createTempFile(DATA_DIRECTORY, "sumo-", ".tmp");
         try {
             Files.write(temporaryFile, taskLines, StandardCharsets.UTF_8);
             try {
@@ -184,7 +187,8 @@ public class Sumo {
      */
     private static List<Task> loadTasks() throws IOException {
         List<Task> tasks = new ArrayList<>();
-        if (!Files.exists(DATA_FILE)) {
+        Files.createDirectories(DATA_DIRECTORY);
+        if (Files.notExists(DATA_FILE)) {
             return tasks;
         }
 

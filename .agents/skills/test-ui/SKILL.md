@@ -24,7 +24,7 @@ Read all current definitions in `test/ui-test-plan.md` completely. Historical re
 ## Execution
 
 1. Use Java 25 for compilation and execution. Confirm the selected Java version before running the plan; stop and report the problem if Java 25 is unavailable.
-2. Run `test/run-ui-tests.ps1` from the repository root. This reusable runner reads the setup command, launch command, test cases, expected output, session boundaries, and file assertions from the Markdown plan. Do not recreate an ad hoc runner for each test session.
+2. Run `java test/UiTestRunner.java` from the repository root. The runner uses Java source-file mode so it works on Windows, macOS, and Linux without a separate runner compilation step or a PowerShell dependency. This reusable runner reads the setup command, launch command, test cases, expected output, session boundaries, and file assertions from the Markdown plan. Do not recreate an ad hoc runner for each test session.
 3. Execute the test cases in the order listed. The runner launches the program using the documented launch command and provides the documented inputs in order.
 4. Treat each command/input and expected-output pair as one assertion. Capture the program’s response to that input, excluding output already recorded for an earlier input in the same session. Normalize only `CRLF` to `LF`, then compare the result exactly. Preserve spaces, blank lines, punctuation, and Unicode characters.
 5. As soon as an assertion fails, terminate the running program, stop the entire test session, and do not run later test cases. Report the test case, command/input, actual output, and expected output.
@@ -43,8 +43,6 @@ The checked-in runner implements the requirements below. Update the runner only 
 - The application prints a startup banner enclosed by the same underscore separator lines used for command responses. For an interactive runner, consume and record the complete startup block before sending or interpreting the first test input. Otherwise, the banner can be mistaken for the first command's response.
 - Keep each command's response separate. After sending a command, read through the closing separator before sending the next command or performing its side-effect assertion.
 - UI-005 requires one long-lived interactive process. For each of its first six commands, use this exact sequence: send one command, capture and compare its response, read and compare `data/sumo.txt`, then send the next command. Do not pipe all UI-005 inputs at once because that cannot prove that each change was saved immediately.
-- When implementing a PowerShell runner, do not use `$input` as a parameter or local variable name because it is an automatic PowerShell variable. Use a name such as `$commandText` instead.
-- In PowerShell, nested arrays of test steps can be flattened while being passed to a function. Prefer explicitly typed string arrays for inputs and expected outputs, or preserve each nested step with the unary comma operator. Verify that the first command is non-empty before launching the full suite.
 - Normalize only `CRLF` to `LF`. Do not trim leading spaces from response bodies. If separators are removed for comparison, remove only the documented separator lines and preserve all text between them exactly.
 
 ## Test-session record

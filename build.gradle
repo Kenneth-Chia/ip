@@ -49,7 +49,7 @@ jar {
 }
 
 shadowJar {
-    archiveFileName = 'sumo.jar'
+    archiveFileName = 'Sumo.jar'
 }
 
 run {

@@ -121,33 +121,34 @@ public class Parser {
      * @throws SumoException if the command or any argument is invalid
      */
     public Command parse(String command, int taskCount) throws SumoException {
-        if (command.equals("bye")) { return new ExitCommand(); }
-        if (command.equals("list")) { return new ListCommand(); }
-        if (command.equals("on") || command.startsWith("on ")) {
+        if ("bye".equals(command)) { return new ExitCommand(); }
+        if ("list".equals(command)) { return new ListCommand(); }
+        if ("on".equals(command) || command.startsWith("on ")) {
             return parseOn(command.substring(2).trim());
         }
-        if (command.equals("mark") || command.startsWith("mark ")) {
+        if ("mark".equals(command) || command.startsWith("mark ")) {
             return indexedCommand(CommandType.MARK, command.substring(4).trim(), taskCount);
         }
-        if (command.equals("unmark") || command.startsWith("unmark ")) {
+        if ("unmark".equals(command) || command.startsWith("unmark ")) {
             return indexedCommand(CommandType.UNMARK, command.substring(6).trim(), taskCount);
         }
-        if (command.equals("delete") || command.startsWith("delete ")) {
+        if ("delete".equals(command) || command.startsWith("delete ")) {
             return indexedCommand(CommandType.DELETE, command.substring(6).trim(), taskCount);
         }
-        if (command.equals("todo") || command.startsWith("todo ")) {
+        if ("todo".equals(command) || command.startsWith("todo ")) {
             String description = command.substring(4).trim();
             ensureNotBlank(description, "Please add a description after 'todo'.");
             ensurePersistable(description);
             return addCommand(new Todo(description));
         }
-        if (command.equals("deadline") || command.startsWith("deadline ")) {
+        if ("deadline".equals(command) || command.startsWith("deadline ")) {
             return parseDeadline(command.substring(8).trim());
         }
-        if (command.equals("event") || command.startsWith("event ")) {
+        if ("event".equals(command) || command.startsWith("event ")) {
             return parseEvent(command.substring(5).trim());
         }
-        throw new SumoException("I do not recognise that command. Try todo, deadline, event, list, on, mark, unmark, or delete.");
+        throw new SumoException("I do not recognise that command. "
+                + "Try todo, deadline, event, list, on, mark, unmark, or delete.");
     }
 
     private Command parseDeadline(String taskText) throws SumoException {

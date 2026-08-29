@@ -28,6 +28,10 @@ Unless the user says otherwise, assume that you are assisting a student working 
 
 Ensure that Java 25 is used when running the application or build tasks. On macOS, use `sdk use java 25.0.3.fx-zulu` to switch to Java 25 if needed.
 
+## JUnit test coverage after code updates:
+
+Focus JUnit tests on approximately the top 50% highest-value methods in the codebase, prioritizing methods that contain complex logic, implement core application behavior, or are critical to correctness. After every code change, reassess the affected code and update or add JUnit tests as needed to continue meeting this coverage target. Run the JUnit test suite and report any failures; do not change expected behavior merely to make a failing test pass.
+
 ## UI testing after code updates:
 
 After every code update, inspect the change and update `test/ui-test-plan.md` when the change affects the console UI, its inputs, outputs, or test coverage. Then invoke the project-specific `$test-ui` skill and run the documented UI test plan. Do not change expected output merely to make a failing test pass; report the first failure with its actual and expected output.

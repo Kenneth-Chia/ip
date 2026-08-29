@@ -1,3 +1,5 @@
+package sumo.parser;
+
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -6,6 +8,19 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.time.format.ResolverStyle;
 import java.util.Locale;
+
+import sumo.command.Command;
+import sumo.command.ExitCommand;
+import sumo.command.ListCommand;
+import sumo.command.OnCommand;
+import sumo.exception.SumoException;
+import sumo.storage.Storage;
+import sumo.task.Deadline;
+import sumo.task.Event;
+import sumo.task.Task;
+import sumo.task.TaskList;
+import sumo.task.Todo;
+import sumo.ui.Ui;
 
 /** Interprets user input and converts it into structured command data. */
 public class Parser {
@@ -59,7 +74,7 @@ public class Parser {
         private void updateTaskStatus(TaskList tasks, Ui ui, Storage storage, boolean markDone)
                 throws IOException {
             Task selectedTask = tasks.get(taskIndex);
-            boolean wasDone = selectedTask.isDone;
+            boolean wasDone = selectedTask.isDone();
             tasks.setDone(taskIndex, markDone);
             try {
                 storage.save(tasks.getTasks());

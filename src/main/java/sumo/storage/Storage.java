@@ -1,3 +1,5 @@
+package sumo.storage;
+
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.AtomicMoveNotSupportedException;
@@ -9,6 +11,12 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
+
+import sumo.task.Deadline;
+import sumo.task.Event;
+import sumo.task.Task;
+import sumo.task.Todo;
+import sumo.ui.Ui;
 
 /**
  * Loads and saves Sumo tasks using a line-based data file.

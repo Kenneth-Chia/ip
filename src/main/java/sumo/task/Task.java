@@ -1,3 +1,5 @@
+package sumo.task;
+
 /**
  * Represents a task entered by the user.
  */
@@ -68,6 +70,11 @@ public class Task {
      */
     public void markAsNotDone() {
         isDone = false;
+    }
+
+    /** @return whether this task has been completed */
+    public boolean isDone() {
+        return isDone;
     }
 
     /**

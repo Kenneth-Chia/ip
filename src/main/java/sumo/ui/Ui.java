@@ -1,6 +1,11 @@
+package sumo.ui;
+
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Scanner;
+
+import sumo.task.DateTimeDisplay;
+import sumo.task.Task;
 
 /**
  * Handles all console input and output for Sumo.

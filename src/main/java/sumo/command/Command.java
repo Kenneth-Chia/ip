@@ -1,4 +1,10 @@
+package sumo.command;
+
 import java.io.IOException;
+
+import sumo.storage.Storage;
+import sumo.task.TaskList;
+import sumo.ui.Ui;
 
 /** Represents one user instruction that can be executed by Sumo. */
 public abstract class Command {

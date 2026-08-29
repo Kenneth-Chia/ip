@@ -1,4 +1,10 @@
+package sumo.command;
+
 import java.io.IOException;
+
+import sumo.storage.Storage;
+import sumo.task.TaskList;
+import sumo.ui.Ui;
 
 /** Ends the current Sumo session. */
 public class ExitCommand extends Command {

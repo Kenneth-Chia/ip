@@ -4,14 +4,36 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.StandardCopyOption;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.time.format.ResolverStyle;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Scanner;
 
 /**
  * Starts Sumo and stores task text entered by the user.
  */
 public class Sumo {
+    /** Date format accepted in commands. */
+    private static final DateTimeFormatter ISO_DATE_FORMATTER =
+            DateTimeFormatter.ofPattern("uuuu-MM-dd", Locale.ENGLISH)
+                    .withResolverStyle(ResolverStyle.STRICT);
+
+    /** Day/month/year format accepted in commands. */
+    private static final DateTimeFormatter DAY_MONTH_DATE_FORMATTER =
+            DateTimeFormatter.ofPattern("d/M/uuuu", Locale.ENGLISH)
+                    .withResolverStyle(ResolverStyle.STRICT);
+
+    /** 24-hour time format accepted in commands. */
+    private static final DateTimeFormatter TIME_FORMATTER =
+            DateTimeFormatter.ofPattern("HHmm", Locale.ENGLISH)
+                    .withResolverStyle(ResolverStyle.STRICT);
+
     /** Relative directory where Sumo stores its task data. */
     private static final Path DATA_DIRECTORY = Path.of("data");
 
@@ -78,6 +100,11 @@ public class Sumo {
             return;
         }
 
+        if (command.equals("on") || command.startsWith("on ")) {
+            printTasksOnDate(command.substring(2).trim(), tasks);
+            return;
+        }
+
         if (command.equals("mark") || command.startsWith("mark ")) {
             int taskIndex = getTaskIndex(command.substring(4).trim(), tasks.size());
             Task task = tasks.get(taskIndex);
@@ -134,12 +161,19 @@ public class Sumo {
         } else if (command.equals("deadline") || command.startsWith("deadline ")) {
             String[] deadlineParts = splitCommand(command.substring(8).trim(), " /by ",
                     "Use: deadline <description> /by <date>.");
-            addedTask = new Deadline(deadlineParts[0], deadlineParts[1]);
+            ParsedDateTime deadline = parseDateTime(deadlineParts[1],
+                    "Use: deadline <description> /by <date> [HHmm].");
+            addedTask = new Deadline(deadlineParts[0], deadline.value, deadline.includesTime);
         } else if (command.equals("event") || command.startsWith("event ")) {
             String[] eventParts = splitEvent(command.substring(5).trim());
-            addedTask = new Event(eventParts[0], eventParts[1], eventParts[2]);
+            ParsedDateTime from = parseDateTime(eventParts[1],
+                    "Use: event <description> /from <date> [HHmm] /to <date> [HHmm].");
+            ParsedDateTime to = parseDateTime(eventParts[2],
+                    "Use: event <description> /from <date> [HHmm] /to <date> [HHmm].");
+            addedTask = new Event(eventParts[0], from.value, to.value,
+                    from.includesTime, to.includesTime);
         } else {
-            throw new SumoException("I do not recognise that command. Try todo, deadline, event, list, mark, unmark, or delete.");
+            throw new SumoException("I do not recognise that command. Try todo, deadline, event, list, on, mark, unmark, or delete.");
         }
 
         tasks.add(addedTask);
@@ -209,6 +243,56 @@ public class Sumo {
     }
 
     /**
+     * Prints deadlines and events that occur on a requested date.
+     * Multi-day events match every date from their start through their end.
+     *
+     * @param dateText the date supplied after the {@code on} command
+     * @param tasks the task list to search
+     * @throws SumoException if the date is missing or invalid
+     */
+    private static void printTasksOnDate(String dateText, List<Task> tasks) throws SumoException {
+        if (dateText.isBlank()) {
+            throw new SumoException("Use: on <date>.");
+        }
+
+        LocalDate date;
+        try {
+            date = parseDate(dateText);
+        } catch (DateTimeParseException exception) {
+            throw new SumoException("Use: on <date>. Dates must use yyyy-MM-dd or d/M/yyyy.");
+        }
+
+        System.out.println(" Here are the tasks on "
+                + DateTimeDisplay.format(date.atStartOfDay(), false) + ":");
+        int matchingTaskNumber = 1;
+        for (Task task : tasks) {
+            if (occursOn(task, date)) {
+                System.out.println(" " + matchingTaskNumber + "." + task);
+                matchingTaskNumber++;
+            }
+        }
+    }
+
+    /**
+     * Checks whether a deadline or event occurs on a date.
+     *
+     * @param task the task to check
+     * @param date the requested date
+     * @return true when the task occurs on the requested date
+     */
+    private static boolean occursOn(Task task, LocalDate date) {
+        if (task instanceof Deadline deadline) {
+            return deadline.getBy().toLocalDate().equals(date);
+        }
+        if (task instanceof Event event) {
+            LocalDate from = event.getFrom().toLocalDate();
+            LocalDate to = event.getTo().toLocalDate();
+            return !date.isBefore(from) && !date.isAfter(to);
+        }
+        return false;
+    }
+
+    /**
      * Reconstructs one task from its stored type, status, and task-specific fields.
      *
      * @param taskLine one line from the data file
@@ -254,10 +338,14 @@ public class Sumo {
             task = new Todo(taskData[2]);
             break;
         case "D":
-            task = new Deadline(taskData[2], taskData[3]);
+            ParsedDateTime deadline = parseStoredDateTime(taskData[3]);
+            task = new Deadline(taskData[2], deadline.value, deadline.includesTime);
             break;
         case "E":
-            task = new Event(taskData[2], taskData[3], taskData[4]);
+            ParsedDateTime from = parseStoredDateTime(taskData[3]);
+            ParsedDateTime to = parseStoredDateTime(taskData[4]);
+            task = new Event(taskData[2], from.value, to.value,
+                    from.includesTime, to.includesTime);
             break;
         default:
             throw new IllegalArgumentException("Unknown task type in data file: " + taskData[0]);
@@ -344,6 +432,76 @@ public class Sumo {
         ensurePersistable(from);
         ensurePersistable(to);
         return new String[] {description, from, to};
+    }
+
+    /**
+     * Parses a date or date-time supplied in a command.
+     *
+     * @param text the date or date-time text
+     * @param errorMessage the message to show when parsing fails
+     * @return the typed value and whether a time was supplied
+     * @throws SumoException if the value does not use a supported format
+     */
+    private static ParsedDateTime parseDateTime(String text, String errorMessage) throws SumoException {
+        try {
+            String[] parts = text.trim().split("\\s+");
+            if (parts.length == 1) {
+                return new ParsedDateTime(parseDate(parts[0]).atStartOfDay(), false);
+            }
+            if (parts.length == 2) {
+                LocalDate date = parseDate(parts[0]);
+                LocalTime time = LocalTime.parse(parts[1], TIME_FORMATTER);
+                return new ParsedDateTime(LocalDateTime.of(date, time), true);
+            }
+        } catch (DateTimeParseException exception) {
+            // Fall through to the user-friendly command error below.
+        }
+        throw new SumoException(errorMessage
+                + " Dates must use yyyy-MM-dd or d/M/yyyy, optionally followed by HHmm.");
+    }
+
+    /**
+     * Parses one supported date format.
+     *
+     * @param text the date text
+     * @return the parsed date
+     * @throws DateTimeParseException if the date is invalid
+     */
+    private static LocalDate parseDate(String text) throws DateTimeParseException {
+        try {
+            return LocalDate.parse(text, ISO_DATE_FORMATTER);
+        } catch (DateTimeParseException exception) {
+            return LocalDate.parse(text, DAY_MONTH_DATE_FORMATTER);
+        }
+    }
+
+    /**
+     * Parses the canonical date value stored in the data file.
+     *
+     * @param text the stored ISO date or date-time
+     * @return the parsed value and whether a time was stored
+     * @throws IllegalArgumentException if the stored value is invalid
+     */
+    private static ParsedDateTime parseStoredDateTime(String text) {
+        try {
+            if (text.contains("T")) {
+                return new ParsedDateTime(LocalDateTime.parse(text), true);
+            }
+            return new ParsedDateTime(LocalDate.parse(text).atStartOfDay(), false);
+        } catch (DateTimeParseException exception) {
+            throw new IllegalArgumentException("Invalid date or time in data file: " + text);
+        }
+    }
+
+    /** Holds a parsed date/time and whether the original value included a time. */
+    private static final class ParsedDateTime {
+        private final LocalDateTime value;
+        private final boolean includesTime;
+
+        private ParsedDateTime(LocalDateTime value, boolean includesTime) {
+            this.value = value;
+            this.includesTime = includesTime;
+        }
     }
 
     /**

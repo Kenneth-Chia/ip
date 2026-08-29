@@ -24,6 +24,13 @@ Unless the user says otherwise, assume that you are assisting a student working 
 
 # Project-specific requirements
 
+## Java coding standard
+
+For every Java code change in this project, invoke and follow the project-specific
+`$seedu-java-coding-standard` skill in `.agents/skills/seedu-java-coding-standard`. Apply the
+standard to production code and test code, and resolve any violations in code touched by the
+change before completing the task.
+
 ## Java version:
 
 Ensure that Java 25 is used when running the application or build tasks. On macOS, use `sdk use java 25.0.3.fx-zulu` to switch to Java 25 if needed.
@@ -37,6 +44,10 @@ Focus JUnit tests on approximately the top 50% highest-value methods in the code
 After every code update, inspect the change and update `test/ui-test-plan.md` when the change affects the console UI, its inputs, outputs, or test coverage. Then invoke the project-specific `$test-ui` skill and run the documented UI test plan. Do not change expected output merely to make a failing test pass; report the first failure with its actual and expected output.
 
 ## Git
+
+For every commit created or proposed in this project, invoke and follow the project-specific
+`$seedu-git-standard` skill in `.agents/skills/seedu-git-standard`. Review the staged changes and
+the complete commit message against the skill before committing.
 
 Use lightweight tags unless the user requests an annotated tag.
 When proposing or creating a commit message, include enough detail to explain the rationale for the change.

@@ -44,7 +44,7 @@ public class Event extends Task {
      * @param toIncludesTime whether the end input included a time
      */
     public Event(String description, LocalDateTime from, LocalDateTime to,
-                 boolean fromIncludesTime, boolean toIncludesTime) {
+            boolean fromIncludesTime, boolean toIncludesTime) {
         super(description);
         this.from = from;
         this.to = to;

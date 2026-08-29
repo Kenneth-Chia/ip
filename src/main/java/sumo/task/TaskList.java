@@ -79,6 +79,7 @@ public class TaskList {
         return matchingTasks;
     }
 
+    /** Determines whether a deadline or event covers the requested date. */
     private boolean occursOn(Task task, LocalDate date) {
         if (task instanceof Deadline deadline) {
             return deadline.getBy().toLocalDate().equals(date);

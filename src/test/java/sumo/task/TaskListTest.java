@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Test;
 
 /** Tests the collection operations and date filtering performed by {@link TaskList}. */
 public class TaskListTest {
+    /** Verifies that construction takes a defensive copy of the source list. */
     @Test
     public void constructor_sourceListChanged_taskListUnaffected() {
         List<Task> source = new java.util.ArrayList<>();
@@ -24,6 +25,7 @@ public class TaskListTest {
         assertEquals(1, taskList.size());
     }
 
+    /** Verifies that callers cannot mutate the returned task snapshot. */
     @Test
     public void getTasks_returnedSnapshotCannotBeModified() {
         TaskList taskList = new TaskList(List.of(new Todo("first")));
@@ -34,6 +36,7 @@ public class TaskListTest {
         assertEquals(1, taskList.size());
     }
 
+    /** Verifies add, delete, and insertion order. */
     @Test
     public void addDeleteAndInsert_tasksRemainInExpectedOrder() {
         Todo first = new Todo("first");
@@ -49,6 +52,7 @@ public class TaskListTest {
         assertSame(second, taskList.get(1));
     }
 
+    /** Verifies that completion status can be set and cleared. */
     @Test
     public void setDone_trueThenFalse_completionStateUpdated() {
         Todo todo = new Todo("read");
@@ -61,6 +65,7 @@ public class TaskListTest {
         assertFalse(todo.isDone());
     }
 
+    /** Verifies matching deadlines are returned for a date. */
     @Test
     public void findOn_deadlineOnRequestedDate_deadlineReturned() {
         Deadline matching = new Deadline("submit", LocalDate.of(2026, 2, 3));
@@ -70,6 +75,7 @@ public class TaskListTest {
         assertEquals(List.of(matching), taskList.findOn(LocalDate.of(2026, 2, 3)));
     }
 
+    /** Verifies that both event-range boundaries are inclusive. */
     @Test
     public void findOn_eventRangeBoundaries_eventsReturnedOnBothBoundaries() {
         Event event = new Event("camp", LocalDate.of(2026, 2, 3), LocalDate.of(2026, 2, 5));
@@ -79,6 +85,7 @@ public class TaskListTest {
         assertEquals(List.of(event), taskList.findOn(LocalDate.of(2026, 2, 5)));
     }
 
+    /** Verifies that todos and out-of-range events do not match. */
     @Test
     public void findOn_outsideEventRangeAndTodo_noTasksReturned() {
         Event event = new Event("camp", LocalDate.of(2026, 2, 3), LocalDate.of(2026, 2, 5));
@@ -89,6 +96,7 @@ public class TaskListTest {
         assertTrue(taskList.findOn(LocalDate.of(2026, 2, 6)).isEmpty());
     }
 
+    /** Verifies that matching tasks retain their original order. */
     @Test
     public void findOn_multipleMatches_originalOrderPreserved() {
         Event first = new Event("camp", LocalDate.of(2026, 2, 1), LocalDate.of(2026, 2, 5));

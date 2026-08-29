@@ -61,6 +61,7 @@ public class Sumo {
         new Sumo(Path.of("data", "sumo.txt").toString()).run();
     }
 
+    /** Extracts a useful display message from a storage exception. */
     private String getErrorMessage(IOException exception) {
         return exception.getMessage() == null
                 ? "The data file could not be accessed."

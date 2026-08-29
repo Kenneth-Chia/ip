@@ -37,7 +37,15 @@ Ensure that Java 25 is used when running the application or build tasks. On macO
 
 ## JUnit test coverage after code updates:
 
-Focus JUnit tests on approximately the top 50% highest-value methods in the codebase, prioritizing methods that contain complex logic, implement core application behavior, or are critical to correctness. After every code change, reassess the affected code and update or add JUnit tests as needed to continue meeting this coverage target. Run the JUnit test suite and report any failures; do not change expected behavior merely to make a failing test pass.
+Focus JUnit tests on approximately the top 50% highest-value methods in the codebase, prioritizing methods that contain complex logic, implement core application behavior, or are critical to correctness. After every code change, reassess the affected code and update or add JUnit tests as needed to continue meeting this coverage target. Do not change expected behavior merely to make a failing test pass.
+
+After completing each coherent code change, run the JUnit suite and Checkstyle together in one Gradle invocation from the repository root:
+
+```powershell
+.\gradlew.bat test checkstyleMain checkstyleTest --rerun-tasks
+```
+
+Always include `--rerun-tasks` so Gradle executes the tests and Checkstyle checks afresh instead of reporting previously cached tasks as `UP-TO-DATE`. Report the number of passing tests and any JUnit failures or Checkstyle violations. Do not consider the code change complete until this command succeeds, unless an environmental problem prevents it; in that case, report the exact blocker and the tasks that could not run.
 
 ## UI testing after code updates:
 

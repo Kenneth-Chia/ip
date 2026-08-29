@@ -6,7 +6,7 @@ This file is the source of truth for the `test-ui` skill. Keep test cases determ
 
 - Working directory: repository root
 - Java version: 25
-- Setup/compile command: `javac -d out src/main/java/Deadline.java src/main/java/Event.java src/main/java/Sumo.java src/main/java/SumoException.java src/main/java/Task.java src/main/java/Todo.java`
+- Setup/compile command: `javac -d out src/main/java/DateTimeDisplay.java src/main/java/Deadline.java src/main/java/Event.java src/main/java/Sumo.java src/main/java/SumoException.java src/main/java/Task.java src/main/java/Todo.java`
 - Program launch command: `java -cp out Sumo`
 - Output comparison: exact, after normalizing Windows `CRLF` line endings to `LF`; each expected block contains only the response produced after its listed input
 - Test isolation: before each test case, run `Remove-Item -LiteralPath data/sumo.txt -ErrorAction SilentlyContinue`, then launch a fresh program process unless the case explicitly requires multiple continuous sessions
@@ -184,14 +184,14 @@ This file is the source of truth for the `test-ui` skill. Keep test cases determ
      ____________________________________________________________
      ```
 
-  2. Command/input: `deadline return book /by June 6th`
+  2. Command/input: `deadline return book /by 2019-06-06`
 
      Expected output:
 
      ```text
      ____________________________________________________________
       Got it. I've added this task:
-        [D][ ] return book (by: June 6th)
+        [D][ ] return book (by: Jun 06 2019)
       Now you have 2 tasks in the list.
      ____________________________________________________________
      ```
@@ -215,7 +215,7 @@ This file is the source of truth for the `test-ui` skill. Keep test cases determ
      ```text
      ____________________________________________________________
       Here are the tasks in your list:
-      1.[D][ ] return book (by: June 6th)
+      1.[D][ ] return book (by: Jun 06 2019)
      ____________________________________________________________
      ```
 
@@ -254,14 +254,14 @@ This file is the source of truth for the `test-ui` skill. Keep test cases determ
      T | 0 | read book
      ```
 
-  2. Command/input: `deadline return book /by June 6th`
+  2. Command/input: `deadline return book /by 2019-06-06`
 
      Expected output:
 
      ```text
      ____________________________________________________________
       Got it. I've added this task:
-        [D][ ] return book (by: June 6th)
+        [D][ ] return book (by: Jun 06 2019)
       Now you have 2 tasks in the list.
      ____________________________________________________________
      ```
@@ -270,17 +270,17 @@ This file is the source of truth for the `test-ui` skill. Keep test cases determ
 
      ```text
      T | 0 | read book
-     D | 0 | return book | June 6th
+     D | 0 | return book | 2019-06-06
      ```
 
-  3. Command/input: `event project meeting /from Aug 6th 2pm /to 4pm`
+  3. Command/input: `event project meeting /from 2019-08-06 1400 /to 2019-08-06 1600`
 
      Expected output:
 
      ```text
      ____________________________________________________________
       Got it. I've added this task:
-        [E][ ] project meeting (from: Aug 6th 2pm to: 4pm)
+        [E][ ] project meeting (from: Aug 06 2019 2:00 PM to: Aug 06 2019 4:00 PM)
       Now you have 3 tasks in the list.
      ____________________________________________________________
      ```
@@ -289,8 +289,8 @@ This file is the source of truth for the `test-ui` skill. Keep test cases determ
 
      ```text
      T | 0 | read book
-     D | 0 | return book | June 6th
-     E | 0 | project meeting | Aug 6th 2pm | 4pm
+     D | 0 | return book | 2019-06-06
+     E | 0 | project meeting | 2019-08-06T14:00 | 2019-08-06T16:00
      ```
 
   4. Command/input: `mark 1`
@@ -308,8 +308,8 @@ This file is the source of truth for the `test-ui` skill. Keep test cases determ
 
      ```text
      T | 1 | read book
-     D | 0 | return book | June 6th
-     E | 0 | project meeting | Aug 6th 2pm | 4pm
+     D | 0 | return book | 2019-06-06
+     E | 0 | project meeting | 2019-08-06T14:00 | 2019-08-06T16:00
      ```
 
   5. Command/input: `unmark 1`
@@ -327,8 +327,8 @@ This file is the source of truth for the `test-ui` skill. Keep test cases determ
 
      ```text
      T | 0 | read book
-     D | 0 | return book | June 6th
-     E | 0 | project meeting | Aug 6th 2pm | 4pm
+     D | 0 | return book | 2019-06-06
+     E | 0 | project meeting | 2019-08-06T14:00 | 2019-08-06T16:00
      ```
 
   6. Command/input: `delete 2`
@@ -338,7 +338,7 @@ This file is the source of truth for the `test-ui` skill. Keep test cases determ
      ```text
      ____________________________________________________________
       Noted. I've removed this task:
-        [D][ ] return book (by: June 6th)
+        [D][ ] return book (by: Jun 06 2019)
       Now you have 2 tasks in the list.
      ____________________________________________________________
      ```
@@ -347,7 +347,7 @@ This file is the source of truth for the `test-ui` skill. Keep test cases determ
 
      ```text
      T | 0 | read book
-     E | 0 | project meeting | Aug 6th 2pm | 4pm
+     E | 0 | project meeting | 2019-08-06T14:00 | 2019-08-06T16:00
      ```
 
   7. Command/input: `bye`
@@ -379,26 +379,26 @@ This file is the source of truth for the `test-ui` skill. Keep test cases determ
      ____________________________________________________________
      ```
 
-  2. Command/input: `deadline return book /by June 6th`
+  2. Command/input: `deadline return book /by 2019-06-06`
 
      Expected output:
 
      ```text
      ____________________________________________________________
       Got it. I've added this task:
-        [D][ ] return book (by: June 6th)
+        [D][ ] return book (by: Jun 06 2019)
       Now you have 2 tasks in the list.
      ____________________________________________________________
      ```
 
-  3. Command/input: `event project meeting /from Aug 6th 2pm /to 4pm`
+  3. Command/input: `event project meeting /from 2019-08-06 1400 /to 2019-08-06 1600`
 
      Expected output:
 
      ```text
      ____________________________________________________________
       Got it. I've added this task:
-        [E][ ] project meeting (from: Aug 6th 2pm to: 4pm)
+        [E][ ] project meeting (from: Aug 06 2019 2:00 PM to: Aug 06 2019 4:00 PM)
       Now you have 3 tasks in the list.
      ____________________________________________________________
      ```
@@ -410,7 +410,7 @@ This file is the source of truth for the `test-ui` skill. Keep test cases determ
      ```text
      ____________________________________________________________
       Nice! I've marked this task as done:
-        [D][X] return book (by: June 6th)
+        [D][X] return book (by: Jun 06 2019)
      ____________________________________________________________
      ```
 
@@ -434,8 +434,8 @@ This file is the source of truth for the `test-ui` skill. Keep test cases determ
      ____________________________________________________________
       Here are the tasks in your list:
       1.[T][ ] read book
-      2.[D][X] return book (by: June 6th)
-      3.[E][ ] project meeting (from: Aug 6th 2pm to: 4pm)
+      2.[D][X] return book (by: Jun 06 2019)
+      3.[E][ ] project meeting (from: Aug 06 2019 2:00 PM to: Aug 06 2019 4:00 PM)
      ____________________________________________________________
      ```
 
@@ -479,9 +479,107 @@ This file is the source of truth for the `test-ui` skill. Keep test cases determ
 
 - Notes: Confirm that `data` exists after startup. The `sumo.txt` file is not required until a task-list change is saved.
 
+### UI-008 — Parse and format dates and times
+
+- Aim: Verify that day/month/year and ISO date inputs become typed values and are displayed in the requested output formats.
+- Inputs, commands, and expected output:
+
+  1. Command/input: `deadline return book /by 2/12/2019 1800`
+
+     Expected output:
+
+     ```text
+     ____________________________________________________________
+      Got it. I've added this task:
+        [D][ ] return book (by: Dec 02 2019 6:00 PM)
+      Now you have 1 tasks in the list.
+     ____________________________________________________________
+     ```
+
+  2. Command/input: `deadline submit report /by 2019-10-15`
+
+     Expected output:
+
+     ```text
+     ____________________________________________________________
+      Got it. I've added this task:
+        [D][ ] submit report (by: Oct 15 2019)
+      Now you have 2 tasks in the list.
+     ____________________________________________________________
+     ```
+
+  3. Command/input: `list`
+
+     Expected output:
+
+     ```text
+     ____________________________________________________________
+      Here are the tasks in your list:
+      1.[D][ ] return book (by: Dec 02 2019 6:00 PM)
+      2.[D][ ] submit report (by: Oct 15 2019)
+     ____________________________________________________________
+     ```
+
+  4. Command/input: `bye`
+
+     Expected output:
+
+     ```text
+     ____________________________________________________________
+     Bye. Hope to see you again soon!
+     ____________________________________________________________
+     ```
+
+- Notes: Run all four inputs in one continuous process so the task state is preserved.
+
 ## Latest test session
 
 Leave the test cases and expected outputs above unchanged when recording a run. Add a dated session below with the actual console transcript, overall result, and—if applicable—the first failure’s actual and expected output.
+
+### 2026-08-29 — PASS (typed date/time parsing and formatting)
+
+Transcript:
+
+```text
+$ java -version
+java version "25.0.4" 2026-07-21 LTS
+
+$ javac -d out src/main/java/DateTimeDisplay.java src/main/java/Deadline.java src/main/java/Event.java src/main/java/Sumo.java src/main/java/SumoException.java src/main/java/Task.java src/main/java/Todo.java
+
+### UI-001 — Add and list a todo
+> todo read book — exact expected response matched
+> list — exact expected response matched
+> bye — exact expected response matched
+
+### UI-002 — Mark and unmark a task
+> todo return book — exact expected response matched
+> mark 1 — exact expected response matched
+> unmark 1 — exact expected response matched
+> bye — exact expected response matched
+
+### UI-003 — Explain invalid commands
+> all six inputs — exact expected responses matched
+
+### UI-004 — Delete a task
+> all five inputs — exact expected responses matched
+
+### UI-005 — Save every task-list change
+> all seven inputs — exact responses and immediate file contents matched
+
+### UI-006 — Load tasks on restart
+> First session — exact expected responses matched
+> Second session — exact expected responses matched
+
+### UI-007 — Start without an existing data folder or file
+> list, bye — exact expected responses matched; data directory created
+
+### UI-008 — Parse and format dates and times
+> deadline return book /by 2/12/2019 1800 — exact expected response matched
+> deadline submit report /by 2019-10-15 — exact expected response matched
+> list, bye — exact expected responses matched
+```
+
+Result: All eight listed test cases passed under Java 25.0.4. UI-005 confirmed immediate persistence, UI-006 confirmed typed dates/times survive restart, and UI-008 confirmed both requested input styles and display formats.
 
 ### 2026-08-28 — PASS (relative-path and clean-start verification)
 

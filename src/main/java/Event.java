@@ -1,21 +1,53 @@
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+
 /**
  * A task that takes place between a specified start and end date or time.
  */
 public class Event extends Task {
-    private final String from;
-    private final String to;
+    private final LocalDateTime from;
+    private final LocalDateTime to;
+    private final boolean fromIncludesTime;
+    private final boolean toIncludesTime;
 
     /**
      * Creates a new incomplete event.
      *
      * @param description the event text
-     * @param from the event start date or time
-     * @param to the event end date or time
+     * @param from the event start date and time
+     * @param to the event end date and time
      */
-    public Event(String description, String from, String to) {
+    public Event(String description, LocalDateTime from, LocalDateTime to) {
+        this(description, from, to, true, true);
+    }
+
+    /**
+     * Creates a new incomplete event for date-only values.
+     *
+     * @param description the event text
+     * @param from the event start date
+     * @param to the event end date
+     */
+    public Event(String description, LocalDate from, LocalDate to) {
+        this(description, from.atStartOfDay(), to.atStartOfDay(), false, false);
+    }
+
+    /**
+     * Creates an event while retaining whether each input included a time.
+     *
+     * @param description the event text
+     * @param from the event start date and time
+     * @param to the event end date and time
+     * @param fromIncludesTime whether the start input included a time
+     * @param toIncludesTime whether the end input included a time
+     */
+    public Event(String description, LocalDateTime from, LocalDateTime to,
+                 boolean fromIncludesTime, boolean toIncludesTime) {
         super(description);
         this.from = from;
         this.to = to;
+        this.fromIncludesTime = fromIncludesTime;
+        this.toIncludesTime = toIncludesTime;
     }
 
     /**
@@ -33,7 +65,7 @@ public class Event extends Task {
      *
      * @return the event start date or time
      */
-    public String getFrom() {
+    public LocalDateTime getFrom() {
         return from;
     }
 
@@ -42,7 +74,7 @@ public class Event extends Task {
      *
      * @return the event end date or time
      */
-    public String getTo() {
+    public LocalDateTime getTo() {
         return to;
     }
 
@@ -53,7 +85,9 @@ public class Event extends Task {
      */
     @Override
     public String toDataString() {
-        return super.toDataString() + " | " + from + " | " + to;
+        String storedFrom = fromIncludesTime ? from.toString() : from.toLocalDate().toString();
+        String storedTo = toIncludesTime ? to.toString() : to.toLocalDate().toString();
+        return super.toDataString() + " | " + storedFrom + " | " + storedTo;
     }
 
     /**
@@ -64,6 +98,7 @@ public class Event extends Task {
     @Override
     public String toString() {
         return "[" + getTypeIcon() + "][" + getStatusIcon() + "] "
-                + getDescription() + " (from: " + from + " to: " + to + ")";
+                + getDescription() + " (from: " + DateTimeDisplay.format(from, fromIncludesTime)
+                + " to: " + DateTimeDisplay.format(to, toIncludesTime) + ")";
     }
 }

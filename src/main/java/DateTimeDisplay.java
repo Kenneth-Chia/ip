@@ -1,0 +1,28 @@
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Locale;
+
+/**
+ * Formats typed date and time values for Sumo's user-facing output.
+ */
+final class DateTimeDisplay {
+    private static final DateTimeFormatter DATE_FORMATTER =
+            DateTimeFormatter.ofPattern("MMM dd yyyy", Locale.ENGLISH);
+    private static final DateTimeFormatter DATE_TIME_FORMATTER =
+            DateTimeFormatter.ofPattern("MMM dd yyyy h:mm a", Locale.ENGLISH);
+
+    private DateTimeDisplay() {
+        // Utility class.
+    }
+
+    /**
+     * Formats a date and optionally its time.
+     *
+     * @param value the value to format
+     * @param includesTime whether the time should be shown
+     * @return the formatted value
+     */
+    static String format(LocalDateTime value, boolean includesTime) {
+        return value.format(includesTime ? DATE_TIME_FORMATTER : DATE_FORMATTER);
+    }
+}

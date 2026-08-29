@@ -28,6 +28,7 @@ public class StorageTest {
     @TempDir
     private Path temporaryDirectory;
 
+    /** Verifies first-run loading and data-directory creation. */
     @Test
     public void load_fileDoesNotExist_emptyListReturnedAndDirectoryCreated() throws IOException {
         Path dataFile = temporaryDirectory.resolve("nested").resolve("sumo.txt");
@@ -40,6 +41,7 @@ public class StorageTest {
         assertFalse(Files.exists(dataFile));
     }
 
+    /** Verifies that every task type and status survives a save-load round trip. */
     @Test
     public void saveAndLoad_allTaskTypesAndStatuses_roundTripPreserved() throws IOException {
         Path dataFile = temporaryDirectory.resolve("data").resolve("sumo.txt");
@@ -64,6 +66,7 @@ public class StorageTest {
         assertTrue(loaded.get(0).isDone());
     }
 
+    /** Verifies that saving replaces obsolete file contents. */
     @Test
     public void save_existingFileReplacedWithCurrentTasks() throws IOException {
         Path dataFile = temporaryDirectory.resolve("sumo.txt");
@@ -76,6 +79,7 @@ public class StorageTest {
                 Files.readAllLines(dataFile, StandardCharsets.UTF_8));
     }
 
+    /** Verifies that invalid records are reported without hiding valid records. */
     @Test
     public void load_blankAndInvalidRecords_validRecordsLoadedAndErrorsReported() throws IOException {
         Path dataFile = temporaryDirectory.resolve("sumo.txt");
@@ -100,6 +104,7 @@ public class StorageTest {
     private static class RecordingUi extends Ui {
         private final List<Integer> invalidLineNumbers = new ArrayList<>();
 
+        /** Records the line number of an invalid stored task. */
         @Override
         public void showInvalidTaskError(int lineNumber, String message) {
             invalidLineNumbers.add(lineNumber);

@@ -46,8 +46,13 @@ public class Parser {
             this.taskIndex = taskIndex;
         }
 
+        /** @return action represented by this command */
         public CommandType getType() { return type; }
+
+        /** @return task to add, or {@code null} for commands that target an existing task */
         public Task getTask() { return task; }
+
+        /** @return zero-based target index, or {@code -1} when adding a task */
         public int getTaskIndex() { return taskIndex; }
 
         /** Executes a mutation that has not yet been extracted into its own command class. */
@@ -71,6 +76,7 @@ public class Parser {
             }
         }
 
+        /** Updates a task's status and restores it if saving fails. */
         private void updateTaskStatus(TaskList tasks, Ui ui, Storage storage, boolean markDone)
                 throws IOException {
             Task selectedTask = tasks.get(taskIndex);
@@ -89,6 +95,7 @@ public class Parser {
             }
         }
 
+        /** Deletes a task and restores it at its original position if saving fails. */
         private void deleteTask(TaskList tasks, Ui ui, Storage storage) throws IOException {
             Task removedTask = tasks.delete(taskIndex);
             try {
@@ -100,6 +107,7 @@ public class Parser {
             ui.showTaskDeleted(removedTask, tasks.size());
         }
 
+        /** Adds a task and removes it again if saving fails. */
         private void addTask(TaskList tasks, Ui ui, Storage storage) throws IOException {
             tasks.add(task);
             try {
@@ -151,12 +159,14 @@ public class Parser {
                 + "Try todo, deadline, event, list, on, mark, unmark, or delete.");
     }
 
+    /** Parses a deadline command and preserves whether its date included a time. */
     private Command parseDeadline(String taskText) throws SumoException {
         String[] parts = splitCommand(taskText, " /by ", "Use: deadline <description> /by <date>.");
         ParsedDateTime deadline = parseDateTime(parts[1], "Use: deadline <description> /by <date> [HHmm].");
         return addCommand(new Deadline(parts[0], deadline.value, deadline.includesTime));
     }
 
+    /** Parses an event command and preserves each endpoint's input precision. */
     private Command parseEvent(String taskText) throws SumoException {
         String[] parts = splitEvent(taskText);
         String message = "Use: event <description> /from <date> [HHmm] /to <date> [HHmm].";
@@ -165,6 +175,7 @@ public class Parser {
         return addCommand(new Event(parts[0], from.value, to.value, from.includesTime, to.includesTime));
     }
 
+    /** Parses a date-filter command using either supported date format. */
     private Command parseOn(String dateText) throws SumoException {
         if (dateText.isBlank()) { throw new SumoException("Use: on <date>."); }
         try {
@@ -174,6 +185,7 @@ public class Parser {
         }
     }
 
+    /** Converts and validates a user-facing one-based task number. */
     private ParsedCommand indexedCommand(CommandType type, String text, int taskCount) throws SumoException {
         if (text.isBlank()) { throw new SumoException("Please specify the number of the task to update."); }
         try {
@@ -187,6 +199,7 @@ public class Parser {
 
     private ParsedCommand addCommand(Task task) { return new ParsedCommand(CommandType.ADD, task, -1); }
 
+    /** Splits a two-part command and validates both persisted fields. */
     private String[] splitCommand(String text, String marker, String message) throws SumoException {
         int markerIndex = text.indexOf(marker);
         if (markerIndex < 0) { throw new SumoException(message); }
@@ -199,6 +212,7 @@ public class Parser {
         return new String[] {first, second};
     }
 
+    /** Splits and validates an event description, start, and end. */
     private String[] splitEvent(String text) throws SumoException {
         String message = "Use: event <description> /from <start> /to <end>.";
         String fromMarker = " /from ";
@@ -218,6 +232,7 @@ public class Parser {
         return new String[] {description, from, to};
     }
 
+    /** Parses a date with an optional 24-hour time. */
     private ParsedDateTime parseDateTime(String text, String message) throws SumoException {
         try {
             String[] parts = text.trim().split("\\s+");
@@ -231,6 +246,7 @@ public class Parser {
         throw new SumoException(message + " Dates must use yyyy-MM-dd or d/M/yyyy, optionally followed by HHmm.");
     }
 
+    /** Parses either of the date formats accepted by Sumo. */
     private LocalDate parseDate(String text) throws DateTimeParseException {
         try { return LocalDate.parse(text, ISO_DATE); }
         catch (DateTimeParseException exception) { return LocalDate.parse(text, DAY_MONTH_DATE); }

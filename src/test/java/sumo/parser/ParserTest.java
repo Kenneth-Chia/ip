@@ -22,12 +22,14 @@ import sumo.task.Todo;
 public class ParserTest {
     private final Parser parser = new Parser();
 
+    /** Verifies commands that take no arguments. */
     @Test
     public void parse_commandsWithoutArguments_correctCommandTypesReturned() throws SumoException {
         assertInstanceOf(ExitCommand.class, parser.parse("bye", 0));
         assertInstanceOf(ListCommand.class, parser.parse("list", 0));
     }
 
+    /** Verifies that todo input produces an add command containing a todo. */
     @Test
     public void parse_todoCommand_addCommandContainsTodo() throws SumoException {
         ParsedCommand command = assertInstanceOf(ParsedCommand.class,
@@ -39,6 +41,7 @@ public class ParserTest {
         assertEquals("read a book", todo.getDescription());
     }
 
+    /** Verifies parsing of a date-only deadline. */
     @Test
     public void parse_deadlineWithDate_dateOnlyDeadlineReturned() throws SumoException {
         ParsedCommand command = assertInstanceOf(ParsedCommand.class,
@@ -49,6 +52,7 @@ public class ParserTest {
         assertEquals("D | 0 | submit report | 2026-02-03", deadline.toDataString());
     }
 
+    /** Verifies parsing of a deadline with a time. */
     @Test
     public void parse_deadlineWithTime_dateTimeDeadlineReturned() throws SumoException {
         ParsedCommand command = assertInstanceOf(ParsedCommand.class,
@@ -59,6 +63,7 @@ public class ParserTest {
         assertEquals("D | 0 | submit report | 2026-02-03T09:15", deadline.toDataString());
     }
 
+    /** Verifies that event endpoints retain their individual precision. */
     @Test
     public void parse_eventWithMixedDateTimes_eventRetainsEachInputFormat() throws SumoException {
         ParsedCommand command = assertInstanceOf(ParsedCommand.class,
@@ -70,6 +75,7 @@ public class ParserTest {
         assertEquals("E | 0 | camp | 2026-02-03 | 2026-02-04T17:30", event.toDataString());
     }
 
+    /** Verifies conversion from user-facing task numbers to list indexes. */
     @Test
     public void parse_indexedCommands_validTaskNumberConvertedToZeroBasedIndex() throws SumoException {
         assertIndexedCommand("mark 2", CommandType.MARK);
@@ -77,12 +83,14 @@ public class ParserTest {
         assertIndexedCommand("delete 2", CommandType.DELETE);
     }
 
+    /** Verifies both supported date formats for the on command. */
     @Test
     public void parse_onWithSupportedDateFormats_onCommandsReturned() throws SumoException {
         assertInstanceOf(OnCommand.class, parser.parse("on 2026-02-03", 0));
         assertInstanceOf(OnCommand.class, parser.parse("on 3/2/2026", 0));
     }
 
+    /** Verifies rejection of commands with missing required arguments. */
     @Test
     public void parse_blankRequiredArguments_exceptionThrown() {
         assertThrows(SumoException.class, () -> parser.parse("todo", 0));
@@ -93,6 +101,7 @@ public class ParserTest {
         assertThrows(SumoException.class, () -> parser.parse("on", 0));
     }
 
+    /** Verifies rejection of invalid dates and times. */
     @Test
     public void parse_invalidDatesAndTimes_exceptionThrown() {
         assertThrows(SumoException.class,
@@ -103,6 +112,7 @@ public class ParserTest {
                 () -> parser.parse("event camp /from tomorrow /to 2026-02-03", 0));
     }
 
+    /** Verifies rejection of invalid task numbers. */
     @Test
     public void parse_invalidTaskNumbers_exceptionThrown() {
         assertThrows(SumoException.class, () -> parser.parse("mark zero", 2));
@@ -110,6 +120,7 @@ public class ParserTest {
         assertThrows(SumoException.class, () -> parser.parse("mark 3", 2));
     }
 
+    /** Verifies rejection of the delimiter reserved for stored task fields. */
     @Test
     public void parse_persistenceDelimiterInTaskData_exceptionThrown() {
         assertThrows(SumoException.class, () -> parser.parse("todo first | second", 0));
@@ -117,11 +128,13 @@ public class ParserTest {
                 () -> parser.parse("deadline report /by 2026-02-03 | extra", 0));
     }
 
+    /** Verifies rejection of unrecognised commands. */
     @Test
     public void parse_unknownCommand_exceptionThrown() {
         assertThrows(SumoException.class, () -> parser.parse("remind me", 0));
     }
 
+    /** Checks the type and zero-based index of an indexed command. */
     private void assertIndexedCommand(String input, CommandType expectedType) throws SumoException {
         ParsedCommand command = assertInstanceOf(ParsedCommand.class, parser.parse(input, 3));
         assertEquals(expectedType, command.getType());

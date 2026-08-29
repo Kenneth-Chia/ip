@@ -8,11 +8,13 @@ import sumo.ui.Ui;
 
 /** Ends the current Sumo session. */
 public class ExitCommand extends Command {
+    /** {@inheritDoc} */
     @Override
     public void execute(TaskList tasks, Ui ui, Storage storage) throws IOException {
         ui.showGoodbye();
     }
 
+    /** {@inheritDoc} */
     @Override
     public boolean isExit() {
         return true;

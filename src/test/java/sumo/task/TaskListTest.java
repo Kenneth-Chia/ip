@@ -97,4 +97,20 @@ public class TaskListTest {
 
         assertEquals(List.of(first, second), taskList.findOn(LocalDate.of(2026, 2, 3)));
     }
+
+    @Test
+    public void find_matchingDescriptions_matchesInOriginalOrder() {
+        Todo first = new Todo("read book");
+        Deadline second = new Deadline("return book", LocalDate.of(2026, 2, 3));
+        TaskList taskList = new TaskList(List.of(first, new Todo("write notes"), second));
+
+        assertEquals(List.of(first, second), taskList.find("book"));
+    }
+
+    @Test
+    public void find_keywordWithDifferentCase_noTasksReturned() {
+        TaskList taskList = new TaskList(List.of(new Todo("read book")));
+
+        assertTrue(taskList.find("Book").isEmpty());
+    }
 }

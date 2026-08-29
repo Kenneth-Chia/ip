@@ -11,6 +11,7 @@ import java.util.Locale;
 
 import sumo.command.Command;
 import sumo.command.ExitCommand;
+import sumo.command.FindCommand;
 import sumo.command.ListCommand;
 import sumo.command.OnCommand;
 import sumo.exception.SumoException;
@@ -123,6 +124,11 @@ public class Parser {
     public Command parse(String command, int taskCount) throws SumoException {
         if ("bye".equals(command)) { return new ExitCommand(); }
         if ("list".equals(command)) { return new ListCommand(); }
+        if ("find".equals(command) || command.startsWith("find ")) {
+            String keyword = command.substring(4).trim();
+            ensureNotBlank(keyword, "Please add a keyword after 'find'.");
+            return new FindCommand(keyword);
+        }
         if ("on".equals(command) || command.startsWith("on ")) {
             return parseOn(command.substring(2).trim());
         }
@@ -148,7 +154,7 @@ public class Parser {
             return parseEvent(command.substring(5).trim());
         }
         throw new SumoException("I do not recognise that command. "
-                + "Try todo, deadline, event, list, on, mark, unmark, or delete.");
+                + "Try todo, deadline, event, list, find, on, mark, unmark, or delete.");
     }
 
     private Command parseDeadline(String taskText) throws SumoException {

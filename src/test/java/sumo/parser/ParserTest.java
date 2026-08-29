@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 import org.junit.jupiter.api.Test;
 
 import sumo.command.ExitCommand;
+import sumo.command.FindCommand;
 import sumo.command.ListCommand;
 import sumo.command.OnCommand;
 import sumo.exception.SumoException;
@@ -26,6 +27,7 @@ public class ParserTest {
     public void parse_commandsWithoutArguments_correctCommandTypesReturned() throws SumoException {
         assertInstanceOf(ExitCommand.class, parser.parse("bye", 0));
         assertInstanceOf(ListCommand.class, parser.parse("list", 0));
+        assertInstanceOf(FindCommand.class, parser.parse("find book", 0));
     }
 
     @Test
@@ -91,6 +93,7 @@ public class ParserTest {
                 () -> parser.parse("event camp /from 2026-02-03 /to", 0));
         assertThrows(SumoException.class, () -> parser.parse("mark", 1));
         assertThrows(SumoException.class, () -> parser.parse("on", 0));
+        assertThrows(SumoException.class, () -> parser.parse("find", 0));
     }
 
     @Test

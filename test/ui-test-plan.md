@@ -6,7 +6,7 @@ This file is the source of truth for the `test-ui` skill. Keep test cases determ
 
 - Working directory: repository root
 - Java version: 25
-- Setup/compile command: `javac -d out src/main/java/sumo/Sumo.java src/main/java/sumo/command/Command.java src/main/java/sumo/command/ExitCommand.java src/main/java/sumo/command/ListCommand.java src/main/java/sumo/command/OnCommand.java src/main/java/sumo/exception/SumoException.java src/main/java/sumo/parser/Parser.java src/main/java/sumo/storage/Storage.java src/main/java/sumo/task/DateTimeDisplay.java src/main/java/sumo/task/Deadline.java src/main/java/sumo/task/Event.java src/main/java/sumo/task/Task.java src/main/java/sumo/task/TaskList.java src/main/java/sumo/task/Todo.java src/main/java/sumo/ui/Ui.java`
+- Setup/compile command: `javac -d out src/main/java/sumo/Sumo.java src/main/java/sumo/command/Command.java src/main/java/sumo/command/ExitCommand.java src/main/java/sumo/command/FindCommand.java src/main/java/sumo/command/ListCommand.java src/main/java/sumo/command/OnCommand.java src/main/java/sumo/exception/SumoException.java src/main/java/sumo/parser/Parser.java src/main/java/sumo/storage/Storage.java src/main/java/sumo/task/DateTimeDisplay.java src/main/java/sumo/task/Deadline.java src/main/java/sumo/task/Event.java src/main/java/sumo/task/Task.java src/main/java/sumo/task/TaskList.java src/main/java/sumo/task/Todo.java src/main/java/sumo/ui/Ui.java`
 - Program launch command: `java -cp out sumo.Sumo`
 - Output comparison: exact, after normalizing Windows `CRLF` line endings to `LF`; each expected block contains only the response produced after its listed input
 - Test isolation: before each test case, run `Remove-Item -LiteralPath data/sumo.txt -ErrorAction SilentlyContinue`, then launch a fresh program process unless the case explicitly requires multiple continuous sessions
@@ -123,7 +123,7 @@ This file is the source of truth for the `test-ui` skill. Keep test cases determ
 
      ```text
      ____________________________________________________________
-      I could not complete that command: I do not recognise that command. Try todo, deadline, event, list, on, mark, unmark, or delete.
+     I could not complete that command: I do not recognise that command. Try todo, deadline, event, list, find, on, mark, unmark, or delete.
      ____________________________________________________________
      ```
 
@@ -619,9 +619,134 @@ This file is the source of truth for the `test-ui` skill. Keep test cases determ
 
 - Notes: Run all seven inputs in one continuous process so the task state is preserved.
 
+### UI-010 — Find tasks by description keyword
+
+- Aim: Verify that `find <keyword>` displays matching tasks in their original order, excludes non-matches, and validates a missing keyword.
+- Inputs, commands, and expected output:
+
+  1. Command/input: `todo read book`
+
+     Expected output:
+
+     ```text
+     ____________________________________________________________
+      Got it. I've added this task:
+        [T][ ] read book
+      Now you have 1 tasks in the list.
+     ____________________________________________________________
+     ```
+
+  2. Command/input: `deadline return book /by 2019-06-06`
+
+     Expected output:
+
+     ```text
+     ____________________________________________________________
+      Got it. I've added this task:
+        [D][ ] return book (by: Jun 06 2019)
+      Now you have 2 tasks in the list.
+     ____________________________________________________________
+     ```
+
+  3. Command/input: `todo write notes`
+
+     Expected output:
+
+     ```text
+     ____________________________________________________________
+      Got it. I've added this task:
+        [T][ ] write notes
+      Now you have 3 tasks in the list.
+     ____________________________________________________________
+     ```
+
+  4. Command/input: `mark 2`
+
+     Expected output:
+
+     ```text
+     ____________________________________________________________
+      Nice! I've marked this task as done:
+        [D][X] return book (by: Jun 06 2019)
+     ____________________________________________________________
+     ```
+
+  5. Command/input: `find book`
+
+     Expected output:
+
+     ```text
+     ____________________________________________________________
+      Here are the matching tasks in your list:
+      1.[T][ ] read book
+      2.[D][X] return book (by: Jun 06 2019)
+     ____________________________________________________________
+     ```
+
+  6. Command/input: `find missing`
+
+     Expected output:
+
+     ```text
+     ____________________________________________________________
+      Here are the matching tasks in your list:
+     ____________________________________________________________
+     ```
+
+  7. Command/input: `find`
+
+     Expected output:
+
+     ```text
+     ____________________________________________________________
+      I could not complete that command: Please add a keyword after 'find'.
+     ____________________________________________________________
+     ```
+
+  8. Command/input: `bye`
+
+     Expected output:
+
+     ```text
+     ____________________________________________________________
+     Bye. Hope to see you again soon!
+     ____________________________________________________________
+     ```
+
+- Notes: Run all eight inputs in one continuous process so the task state is preserved.
+
 ## Latest test session
 
 Leave the test cases and expected outputs above unchanged when recording a run. Add a dated session below with the actual console transcript, overall result, and—if applicable—the first failure’s actual and expected output.
+
+### 2026-08-29 — PASS (find tasks by keyword)
+
+Concise exact-assertion transcript:
+
+```text
+$ java -version
+java version "25.0.4" 2026-07-21 LTS
+
+$ javac -d out <documented source files>
+Compilation succeeded with no output.
+
+### UI-001 through UI-009
+All documented command/output assertions matched exactly.
+
+### UI-010
+> find book
+ Here are the matching tasks in your list:
+ 1.[T][ ] read book
+ 2.[D][X] return book (by: Jun 06 2019)
+> find missing
+ Here are the matching tasks in your list:
+> find
+ I could not complete that command: Please add a keyword after 'find'.
+> bye
+Bye. Hope to see you again soon!
+```
+
+Result: All ten listed UI test cases passed under Java 25.0.4.
 
 ### 2026-08-29 — PASS (Java package organization)
 

@@ -24,8 +24,8 @@ Read all current definitions in `test/ui-test-plan.md` completely. Historical re
 ## Execution
 
 1. Use Java 25 for compilation and execution. Confirm the selected Java version before running the plan; stop and report the problem if Java 25 is unavailable.
-2. Run any setup or compilation command from the plan, recording its console input and output.
-3. Execute the test cases in the order listed. For each case, launch the program using its documented launch command and provide the documented inputs in order.
+2. Run `test/run-ui-tests.ps1` from the repository root. This reusable runner reads the setup command, launch command, test cases, expected output, session boundaries, and file assertions from the Markdown plan. Do not recreate an ad hoc runner for each test session.
+3. Execute the test cases in the order listed. The runner launches the program using the documented launch command and provides the documented inputs in order.
 4. Treat each command/input and expected-output pair as one assertion. Capture the program’s response to that input, excluding output already recorded for an earlier input in the same session. Normalize only `CRLF` to `LF`, then compare the result exactly. Preserve spaces, blank lines, punctuation, and Unicode characters.
 5. As soon as an assertion fails, terminate the running program, stop the entire test session, and do not run later test cases. Report the test case, command/input, actual output, and expected output.
 6. On success, report that all listed test cases passed.
@@ -35,6 +35,8 @@ If a test case needs state from earlier inputs, keep those inputs in the same ca
 ## Runner requirements and known pitfalls
 
 Account for these requirements before starting the test run. A runner error is not an application failure; correct the runner before reporting a failed assertion.
+
+The checked-in runner implements the requirements below. Update the runner only when the plan needs a new kind of setup, interaction, or assertion that the generic runner cannot express. Adding ordinary commands, expected responses, persistence checks, or another restart session should require changing only the Markdown plan.
 
 - Compile once using the plan's setup command, then reuse the compiled output for every case. Do not recompile before individual cases.
 - A fresh Java process is intentionally required for each isolated test case. A restart case may require more than one process. Java startup can take considerably longer than compilation, so allow enough time for every documented launch instead of treating a slow launch as a hang.

@@ -5,11 +5,14 @@ This file is the source of truth for the `test-ui` skill. Keep test cases determ
 ## Execution information
 
 - Working directory: repository root
+- Test runner command: `powershell -ExecutionPolicy Bypass -File test/run-ui-tests.ps1`
 - Java version: 25
 - Setup/compile command: `javac -d out src/main/java/sumo/Sumo.java src/main/java/sumo/command/Command.java src/main/java/sumo/command/ExitCommand.java src/main/java/sumo/command/FindCommand.java src/main/java/sumo/command/ListCommand.java src/main/java/sumo/command/OnCommand.java src/main/java/sumo/exception/SumoException.java src/main/java/sumo/parser/Parser.java src/main/java/sumo/storage/Storage.java src/main/java/sumo/task/DateTimeDisplay.java src/main/java/sumo/task/Deadline.java src/main/java/sumo/task/Event.java src/main/java/sumo/task/Task.java src/main/java/sumo/task/TaskList.java src/main/java/sumo/task/Todo.java src/main/java/sumo/ui/Ui.java`
 - Program launch command: `java -cp out sumo.Sumo`
 - Output comparison: exact, after normalizing Windows `CRLF` line endings to `LF`; each expected block contains only the response produced after its listed input
 - Test isolation: before each test case, run `Remove-Item -LiteralPath data/sumo.txt -ErrorAction SilentlyContinue`, then launch a fresh program process unless the case explicitly requires multiple continuous sessions
+
+The runner parses the numbered `Command/input` entries and their following fenced `Expected output` blocks. Keep that structure when adding a feature. An optional fenced `Expected `<path>` content immediately after the command` block adds a file assertion to that step. Use `First session` and `Second session` headings when a case must restart without clearing persisted state.
 
 ## Test cases
 

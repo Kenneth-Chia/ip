@@ -45,6 +45,10 @@ After every code update, inspect the change and update `test/ui-test-plan.md` wh
 
 ## Git
 
+For every commit created or proposed in this project, invoke and follow the project-specific
+`$seedu-git-standard` skill in `.agents/skills/seedu-git-standard`. Review the staged changes and
+the complete commit message against the skill before committing.
+
 Use lightweight tags unless the user requests an annotated tag.
 When proposing or creating a commit message, include enough detail to explain the rationale for the change.
 Do not commit or push unless explicitly asked.

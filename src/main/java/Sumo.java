@@ -1,8 +1,5 @@
 import java.io.IOException;
 import java.nio.file.Path;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
 
 /** Coordinates Sumo's user interface, parsing, task operations, and storage. */
 public class Sumo {
@@ -10,11 +7,11 @@ public class Sumo {
         Ui ui = new Ui();
         Storage storage = new Storage(Path.of("data", "sumo.txt"));
         Parser parser = new Parser();
-        List<Task> tasks;
+        TaskList tasks;
         try {
-            tasks = storage.load(ui);
+            tasks = new TaskList(storage.load(ui));
         } catch (IOException exception) {
-            tasks = new ArrayList<>();
+            tasks = new TaskList();
             ui.showLoadingError(getErrorMessage(exception));
         }
 
@@ -39,14 +36,14 @@ public class Sumo {
     }
 
     /** Carries out one already-parsed, non-exit command. */
-    private static void handleCommand(Parser.ParsedCommand command, List<Task> tasks,
+    private static void handleCommand(Parser.ParsedCommand command, TaskList tasks,
             Ui ui, Storage storage) throws IOException {
         switch (command.getType()) {
         case LIST:
-            ui.showTaskList(tasks);
+            ui.showTaskList(tasks.getTasks());
             break;
         case ON:
-            printTasksOnDate(command.getDate(), tasks, ui);
+            ui.showTasksOnDate(command.getDate().atStartOfDay(), tasks.findOn(command.getDate()));
             break;
         case MARK:
             updateTaskStatus(command.getTaskIndex(), true, tasks, ui, storage);
@@ -66,19 +63,15 @@ public class Sumo {
     }
 
     /** Updates one task and restores its old state if saving fails. */
-    private static void updateTaskStatus(int taskIndex, boolean markDone, List<Task> tasks,
+    private static void updateTaskStatus(int taskIndex, boolean markDone, TaskList tasks,
             Ui ui, Storage storage) throws IOException {
         Task task = tasks.get(taskIndex);
         boolean wasDone = task.isDone;
-        if (markDone) {
-            task.markAsDone();
-        } else {
-            task.markAsNotDone();
-        }
+        tasks.setDone(taskIndex, markDone);
         try {
-            storage.save(tasks);
+            storage.save(tasks.getTasks());
         } catch (IOException exception) {
-            task.isDone = wasDone;
+            tasks.setDone(taskIndex, wasDone);
             throw exception;
         }
         if (markDone) {
@@ -89,52 +82,29 @@ public class Sumo {
     }
 
     /** Deletes one task and restores it if saving fails. */
-    private static void deleteTask(int taskIndex, List<Task> tasks, Ui ui, Storage storage)
+    private static void deleteTask(int taskIndex, TaskList tasks, Ui ui, Storage storage)
             throws IOException {
-        Task removedTask = tasks.remove(taskIndex);
+        Task removedTask = tasks.delete(taskIndex);
         try {
-            storage.save(tasks);
+            storage.save(tasks.getTasks());
         } catch (IOException exception) {
-            tasks.add(taskIndex, removedTask);
+            tasks.insert(taskIndex, removedTask);
             throw exception;
         }
         ui.showTaskDeleted(removedTask, tasks.size());
     }
 
     /** Adds one task and removes it again if saving fails. */
-    private static void addTask(Task task, List<Task> tasks, Ui ui, Storage storage)
+    private static void addTask(Task task, TaskList tasks, Ui ui, Storage storage)
             throws IOException {
         tasks.add(task);
         try {
-            storage.save(tasks);
+            storage.save(tasks.getTasks());
         } catch (IOException exception) {
-            tasks.remove(tasks.size() - 1);
+            tasks.delete(tasks.size() - 1);
             throw exception;
         }
         ui.showTaskAdded(task, tasks.size());
-    }
-
-    /** Finds deadlines and events that occur on the requested date. */
-    private static void printTasksOnDate(LocalDate date, List<Task> tasks, Ui ui) {
-        List<Task> matchingTasks = new ArrayList<>();
-        for (Task task : tasks) {
-            if (occursOn(task, date)) {
-                matchingTasks.add(task);
-            }
-        }
-        ui.showTasksOnDate(date.atStartOfDay(), matchingTasks);
-    }
-
-    private static boolean occursOn(Task task, LocalDate date) {
-        if (task instanceof Deadline deadline) {
-            return deadline.getBy().toLocalDate().equals(date);
-        }
-        if (task instanceof Event event) {
-            LocalDate from = event.getFrom().toLocalDate();
-            LocalDate to = event.getTo().toLocalDate();
-            return !date.isBefore(from) && !date.isAfter(to);
-        }
-        return false;
     }
 
     private static String getErrorMessage(IOException exception) {

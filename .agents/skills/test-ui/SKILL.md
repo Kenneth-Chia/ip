@@ -19,6 +19,8 @@ Read `test/ui-test-plan.md` before running anything. The plan is the source of t
 
 Do not invent test cases or silently change expected output. If the plan is incomplete or ambiguous, report the missing detail before testing.
 
+Read all current definitions in `test/ui-test-plan.md` completely. Historical results are stored separately in `test/ui-test-history.md`; they are evidence from earlier runs, not test definitions or expected output, and do not need to be read to execute the current plan.
+
 ## Execution
 
 1. Use Java 25 for compilation and execution. Confirm the selected Java version before running the plan; stop and report the problem if Java 25 is unavailable.
@@ -30,8 +32,23 @@ Do not invent test cases or silently change expected output. If the plan is inco
 
 If a test case needs state from earlier inputs, keep those inputs in the same case and preserve their order. Do not combine separate test cases into one process unless the plan explicitly says to do so.
 
+## Runner requirements and known pitfalls
+
+Account for these requirements before starting the test run. A runner error is not an application failure; correct the runner before reporting a failed assertion.
+
+- Compile once using the plan's setup command, then reuse the compiled output for every case. Do not recompile before individual cases.
+- A fresh Java process is intentionally required for each isolated test case. A restart case may require more than one process. Java startup can take considerably longer than compilation, so allow enough time for every documented launch instead of treating a slow launch as a hang.
+- The application prints a startup banner enclosed by the same underscore separator lines used for command responses. For an interactive runner, consume and record the complete startup block before sending or interpreting the first test input. Otherwise, the banner can be mistaken for the first command's response.
+- Keep each command's response separate. After sending a command, read through the closing separator before sending the next command or performing its side-effect assertion.
+- UI-005 requires one long-lived interactive process. For each of its first six commands, use this exact sequence: send one command, capture and compare its response, read and compare `data/sumo.txt`, then send the next command. Do not pipe all UI-005 inputs at once because that cannot prove that each change was saved immediately.
+- When implementing a PowerShell runner, do not use `$input` as a parameter or local variable name because it is an automatic PowerShell variable. Use a name such as `$commandText` instead.
+- In PowerShell, nested arrays of test steps can be flattened while being passed to a function. Prefer explicitly typed string arrays for inputs and expected outputs, or preserve each nested step with the unary comma operator. Verify that the first command is non-empty before launching the full suite.
+- Normalize only `CRLF` to `LF`. Do not trim leading spaces from response bodies. If separators are removed for comparison, remove only the documented separator lines and preserve all text between them exactly.
+
 ## Test-session record
 
 Always include a concise transcript in the response after testing. Show each command or console input with a `$ ` or `> ` marker and its resulting output in a fenced `text` block. Include setup/compilation output when it is relevant. On failure, end the transcript at the first failing assertion and clearly label both `Actual output` and `Expected output`.
+
+When the task includes recording the run in the repository, append a concise entry to `test/ui-test-history.md`; never append session records to the test plan. For a successful run, record only the date, Java version, cases executed, and overall result. For a failed run, additionally record only the first failing case, command/input, actual output, and expected output. Do not store full successful transcripts because Git history already preserves earlier records.
 
 Do not edit the implementation to make a test pass. If the plan itself needs correction, explain the issue separately and wait for the user’s direction.

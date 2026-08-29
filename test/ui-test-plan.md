@@ -123,7 +123,7 @@ This file is the source of truth for the `test-ui` skill. Keep test cases determ
 
      ```text
      ____________________________________________________________
-      I could not complete that command: I do not recognise that command. Try todo, deadline, event, list, mark, unmark, or delete.
+      I could not complete that command: I do not recognise that command. Try todo, deadline, event, list, on, mark, unmark, or delete.
      ____________________________________________________________
      ```
 
@@ -532,9 +532,120 @@ This file is the source of truth for the `test-ui` skill. Keep test cases determ
 
 - Notes: Run all four inputs in one continuous process so the task state is preserved.
 
+### UI-009 — List tasks on a date
+
+- Aim: Verify that `on <date>` lists matching deadlines and events, supports both date formats, includes multi-day events, and excludes todos.
+- Inputs, commands, and expected output:
+
+  1. Command/input: `todo read book`
+
+     Expected output:
+
+     ```text
+     ____________________________________________________________
+      Got it. I've added this task:
+        [T][ ] read book
+      Now you have 1 tasks in the list.
+     ____________________________________________________________
+     ```
+
+  2. Command/input: `deadline return book /by 2019-10-15`
+
+     Expected output:
+
+     ```text
+     ____________________________________________________________
+      Got it. I've added this task:
+        [D][ ] return book (by: Oct 15 2019)
+      Now you have 2 tasks in the list.
+     ____________________________________________________________
+     ```
+
+  3. Command/input: `event project meeting /from 2019-10-14 0900 /to 2019-10-16 1700`
+
+     Expected output:
+
+     ```text
+     ____________________________________________________________
+      Got it. I've added this task:
+        [E][ ] project meeting (from: Oct 14 2019 9:00 AM to: Oct 16 2019 5:00 PM)
+      Now you have 3 tasks in the list.
+     ____________________________________________________________
+     ```
+
+  4. Command/input: `on 2019-10-15`
+
+     Expected output:
+
+     ```text
+     ____________________________________________________________
+      Here are the tasks on Oct 15 2019:
+      1.[D][ ] return book (by: Oct 15 2019)
+      2.[E][ ] project meeting (from: Oct 14 2019 9:00 AM to: Oct 16 2019 5:00 PM)
+     ____________________________________________________________
+     ```
+
+  5. Command/input: `on 15/10/2019`
+
+     Expected output:
+
+     ```text
+     ____________________________________________________________
+      Here are the tasks on Oct 15 2019:
+      1.[D][ ] return book (by: Oct 15 2019)
+      2.[E][ ] project meeting (from: Oct 14 2019 9:00 AM to: Oct 16 2019 5:00 PM)
+     ____________________________________________________________
+     ```
+
+  6. Command/input: `on 2019-10-17`
+
+     Expected output:
+
+     ```text
+     ____________________________________________________________
+      Here are the tasks on Oct 17 2019:
+     ____________________________________________________________
+     ```
+
+  7. Command/input: `bye`
+
+     Expected output:
+
+     ```text
+     ____________________________________________________________
+     Bye. Hope to see you again soon!
+     ____________________________________________________________
+     ```
+
+- Notes: Run all seven inputs in one continuous process so the task state is preserved.
+
 ## Latest test session
 
 Leave the test cases and expected outputs above unchanged when recording a run. Add a dated session below with the actual console transcript, overall result, and—if applicable—the first failure’s actual and expected output.
+
+### 2026-08-29 — PASS (on-date filtering)
+
+Transcript:
+
+```text
+$ java -version
+java version "25.0.4" 2026-07-21 LTS
+
+$ javac -d out src/main/java/DateTimeDisplay.java src/main/java/Deadline.java src/main/java/Event.java src/main/java/Sumo.java src/main/java/SumoException.java src/main/java/Task.java src/main/java/Todo.java
+
+### UI-001 through UI-008
+> all documented inputs — exact expected responses matched
+
+### UI-009 — List tasks on a date
+> todo, deadline, event — exact expected responses matched
+> on 2019-10-15 — exact expected response matched
+> on 15/10/2019 — exact expected response matched
+> on 2019-10-17 — exact expected response matched
+> bye — exact expected response matched
+> immediate persistence checks — not applicable; `on` is read-only
+```
+
+Result: All nine listed test cases passed under Java 25.0.4. UI-009 confirmed exact-date deadlines, inclusive multi-day event matching, alternate date input, filtered numbering, and empty results.
 
 ### 2026-08-29 — PASS (typed date/time parsing and formatting)
 

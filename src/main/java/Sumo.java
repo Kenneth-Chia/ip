@@ -100,6 +100,11 @@ public class Sumo {
             return;
         }
 
+        if (command.equals("on") || command.startsWith("on ")) {
+            printTasksOnDate(command.substring(2).trim(), tasks);
+            return;
+        }
+
         if (command.equals("mark") || command.startsWith("mark ")) {
             int taskIndex = getTaskIndex(command.substring(4).trim(), tasks.size());
             Task task = tasks.get(taskIndex);
@@ -168,7 +173,7 @@ public class Sumo {
             addedTask = new Event(eventParts[0], from.value, to.value,
                     from.includesTime, to.includesTime);
         } else {
-            throw new SumoException("I do not recognise that command. Try todo, deadline, event, list, mark, unmark, or delete.");
+            throw new SumoException("I do not recognise that command. Try todo, deadline, event, list, on, mark, unmark, or delete.");
         }
 
         tasks.add(addedTask);
@@ -235,6 +240,56 @@ public class Sumo {
             }
         }
         return tasks;
+    }
+
+    /**
+     * Prints deadlines and events that occur on a requested date.
+     * Multi-day events match every date from their start through their end.
+     *
+     * @param dateText the date supplied after the {@code on} command
+     * @param tasks the task list to search
+     * @throws SumoException if the date is missing or invalid
+     */
+    private static void printTasksOnDate(String dateText, List<Task> tasks) throws SumoException {
+        if (dateText.isBlank()) {
+            throw new SumoException("Use: on <date>.");
+        }
+
+        LocalDate date;
+        try {
+            date = parseDate(dateText);
+        } catch (DateTimeParseException exception) {
+            throw new SumoException("Use: on <date>. Dates must use yyyy-MM-dd or d/M/yyyy.");
+        }
+
+        System.out.println(" Here are the tasks on "
+                + DateTimeDisplay.format(date.atStartOfDay(), false) + ":");
+        int matchingTaskNumber = 1;
+        for (Task task : tasks) {
+            if (occursOn(task, date)) {
+                System.out.println(" " + matchingTaskNumber + "." + task);
+                matchingTaskNumber++;
+            }
+        }
+    }
+
+    /**
+     * Checks whether a deadline or event occurs on a date.
+     *
+     * @param task the task to check
+     * @param date the requested date
+     * @return true when the task occurs on the requested date
+     */
+    private static boolean occursOn(Task task, LocalDate date) {
+        if (task instanceof Deadline deadline) {
+            return deadline.getBy().toLocalDate().equals(date);
+        }
+        if (task instanceof Event event) {
+            LocalDate from = event.getFrom().toLocalDate();
+            LocalDate to = event.getTo().toLocalDate();
+            return !date.isBefore(from) && !date.isAfter(to);
+        }
+        return false;
     }
 
     /**

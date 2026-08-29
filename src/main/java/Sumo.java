@@ -1,9 +1,5 @@
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.AtomicMoveNotSupportedException;
-import java.nio.file.StandardCopyOption;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -33,17 +29,12 @@ public class Sumo {
             DateTimeFormatter.ofPattern("HHmm", Locale.ENGLISH)
                     .withResolverStyle(ResolverStyle.STRICT);
 
-    /** Relative directory where Sumo stores its task data. */
-    private static final Path DATA_DIRECTORY = Path.of("data");
-
-    /** Relative, platform-independent path to Sumo's task data file. */
-    private static final Path DATA_FILE = DATA_DIRECTORY.resolve("sumo.txt");
-
     public static void main(String[] args) {
         Ui ui = new Ui();
+        Storage storage = new Storage(Path.of("data", "sumo.txt"));
         List<Task> tasks;
         try {
-            tasks = loadTasks(ui);
+            tasks = storage.load(ui);
         } catch (IOException exception) {
             tasks = new ArrayList<>();
             ui.showLoadingError(getErrorMessage(exception));
@@ -61,7 +52,7 @@ public class Sumo {
             }
 
             try {
-                handleCommand(command, tasks, ui);
+                handleCommand(command, tasks, ui, storage);
             } catch (SumoException exception) {
                 ui.showCommandError(exception.getMessage());
             } catch (IOException exception) {
@@ -78,9 +69,11 @@ public class Sumo {
      * @param command the command entered by the user
      * @param tasks the task list
      * @param ui the console interface used to display command results
+     * @param storage the data-file manager used after task-list changes
      * @throws SumoException if the command is not valid
      */
-    private static void handleCommand(String command, List<Task> tasks, Ui ui) throws SumoException, IOException {
+    private static void handleCommand(String command, List<Task> tasks, Ui ui, Storage storage)
+            throws SumoException, IOException {
         if (command.equals("list")) {
             ui.showTaskList(tasks);
             return;
@@ -97,7 +90,7 @@ public class Sumo {
             boolean wasDone = task.isDone;
             task.markAsDone();
             try {
-                saveTasks(tasks);
+                storage.save(tasks);
             } catch (IOException exception) {
                 task.isDone = wasDone;
                 throw exception;
@@ -112,7 +105,7 @@ public class Sumo {
             boolean wasDone = task.isDone;
             task.markAsNotDone();
             try {
-                saveTasks(tasks);
+                storage.save(tasks);
             } catch (IOException exception) {
                 task.isDone = wasDone;
                 throw exception;
@@ -125,7 +118,7 @@ public class Sumo {
             int taskIndex = getTaskIndex(command.substring(6).trim(), tasks.size());
             Task removedTask = tasks.remove(taskIndex);
             try {
-                saveTasks(tasks);
+                storage.save(tasks);
             } catch (IOException exception) {
                 tasks.add(taskIndex, removedTask);
                 throw exception;
@@ -160,66 +153,12 @@ public class Sumo {
 
         tasks.add(addedTask);
         try {
-            saveTasks(tasks);
+            storage.save(tasks);
         } catch (IOException exception) {
             tasks.remove(tasks.size() - 1);
             throw exception;
         }
         ui.showTaskAdded(addedTask, tasks.size());
-    }
-
-    /**
-     * Rewrites the data file so that it represents the current task list.
-     *
-     * @param tasks the current task list
-     * @throws IOException if the data directory or file cannot be written
-     */
-    private static void saveTasks(List<Task> tasks) throws IOException {
-        Files.createDirectories(DATA_DIRECTORY);
-        List<String> taskLines = tasks.stream()
-                .map(Task::toDataString)
-                .toList();
-        Path temporaryFile = Files.createTempFile(DATA_DIRECTORY, "sumo-", ".tmp");
-        try {
-            Files.write(temporaryFile, taskLines, StandardCharsets.UTF_8);
-            try {
-                Files.move(temporaryFile, DATA_FILE, StandardCopyOption.ATOMIC_MOVE,
-                        StandardCopyOption.REPLACE_EXISTING);
-            } catch (AtomicMoveNotSupportedException exception) {
-                Files.move(temporaryFile, DATA_FILE, StandardCopyOption.REPLACE_EXISTING);
-            }
-        } finally {
-            Files.deleteIfExists(temporaryFile);
-        }
-    }
-
-    /**
-     * Loads tasks from the data file, or returns an empty list on the first run.
-     *
-     * @param ui the console interface used to report invalid saved records
-     * @return the tasks stored during the previous run
-     * @throws IOException if the existing data file cannot be read
-     */
-    private static List<Task> loadTasks(Ui ui) throws IOException {
-        List<Task> tasks = new ArrayList<>();
-        Files.createDirectories(DATA_DIRECTORY);
-        if (Files.notExists(DATA_FILE)) {
-            return tasks;
-        }
-
-        List<String> taskLines = Files.readAllLines(DATA_FILE, StandardCharsets.UTF_8);
-        for (int lineNumber = 0; lineNumber < taskLines.size(); lineNumber++) {
-            String taskLine = taskLines.get(lineNumber);
-            if (taskLine.isBlank()) {
-                continue;
-            }
-            try {
-                tasks.add(parseTask(taskLine));
-            } catch (IllegalArgumentException exception) {
-                ui.showInvalidTaskError(lineNumber + 1, exception.getMessage());
-            }
-        }
-        return tasks;
     }
 
     /**
@@ -269,71 +208,6 @@ public class Sumo {
             return !date.isBefore(from) && !date.isAfter(to);
         }
         return false;
-    }
-
-    /**
-     * Reconstructs one task from its stored type, status, and task-specific fields.
-     *
-     * @param taskLine one line from the data file
-     * @return the reconstructed task
-     */
-    private static Task parseTask(String taskLine) {
-        if (taskLine == null || taskLine.isBlank()) {
-            throw new IllegalArgumentException("the task record is blank.");
-        }
-
-        String[] taskData = taskLine.split(" \\| ", -1);
-        int expectedFieldCount;
-        switch (taskData[0]) {
-        case "T":
-            expectedFieldCount = 3;
-            break;
-        case "D":
-            expectedFieldCount = 4;
-            break;
-        case "E":
-            expectedFieldCount = 5;
-            break;
-        default:
-            throw new IllegalArgumentException("Unknown task type in data file: " + taskData[0]);
-        }
-
-        if (taskData.length != expectedFieldCount) {
-            throw new IllegalArgumentException("Invalid number of fields in data file.");
-        }
-        if (!taskData[1].equals("0") && !taskData[1].equals("1")) {
-            throw new IllegalArgumentException("Invalid completion status in data file: " + taskData[1]);
-        }
-        for (int i = 2; i < taskData.length; i++) {
-            if (taskData[i].isBlank()) {
-                throw new IllegalArgumentException("Task fields in data file cannot be blank.");
-            }
-        }
-
-        Task task;
-
-        switch (taskData[0]) {
-        case "T":
-            task = new Todo(taskData[2]);
-            break;
-        case "D":
-            ParsedDateTime deadline = parseStoredDateTime(taskData[3]);
-            task = new Deadline(taskData[2], deadline.value, deadline.includesTime);
-            break;
-        case "E":
-            ParsedDateTime from = parseStoredDateTime(taskData[3]);
-            ParsedDateTime to = parseStoredDateTime(taskData[4]);
-            task = new Event(taskData[2], from.value, to.value,
-                    from.includesTime, to.includesTime);
-            break;
-        default:
-            throw new IllegalArgumentException("Unknown task type in data file: " + taskData[0]);
-        }
-
-        if (taskData[1].equals("1")) {
-            task.markAsDone();
-        }
-        return task;
     }
 
     /**
@@ -451,24 +325,6 @@ public class Sumo {
             return LocalDate.parse(text, ISO_DATE_FORMATTER);
         } catch (DateTimeParseException exception) {
             return LocalDate.parse(text, DAY_MONTH_DATE_FORMATTER);
-        }
-    }
-
-    /**
-     * Parses the canonical date value stored in the data file.
-     *
-     * @param text the stored ISO date or date-time
-     * @return the parsed value and whether a time was stored
-     * @throws IllegalArgumentException if the stored value is invalid
-     */
-    private static ParsedDateTime parseStoredDateTime(String text) {
-        try {
-            if (text.contains("T")) {
-                return new ParsedDateTime(LocalDateTime.parse(text), true);
-            }
-            return new ParsedDateTime(LocalDate.parse(text).atStartOfDay(), false);
-        } catch (DateTimeParseException exception) {
-            throw new IllegalArgumentException("Invalid date or time in data file: " + text);
         }
     }
 

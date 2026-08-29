@@ -13,7 +13,6 @@ import java.time.format.ResolverStyle;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.Scanner;
 
 /**
  * Starts Sumo and stores task text entered by the user.
@@ -41,46 +40,35 @@ public class Sumo {
     private static final Path DATA_FILE = DATA_DIRECTORY.resolve("sumo.txt");
 
     public static void main(String[] args) {
-        String separator = "____________________________________________________________";
-        String banner = " ██████  ██    ██ ███    ███  ██████\n"
-                + "██       ██    ██ ████  ████ ██    ██\n"
-                + " █████   ██    ██ ██ ████ ██ ██    ██\n"
-                + "     ██  ██    ██ ██  ██  ██ ██    ██\n"
-                + "██████    ██████  ██      ██  ██████";
+        Ui ui = new Ui();
         List<Task> tasks;
         try {
-            tasks = loadTasks();
+            tasks = loadTasks(ui);
         } catch (IOException exception) {
             tasks = new ArrayList<>();
-            System.out.println(" I could not load your saved tasks: " + getErrorMessage(exception));
+            ui.showLoadingError(getErrorMessage(exception));
         }
 
-        System.out.println(separator);
-        System.out.println(banner);
-        System.out.println("Hello! I'm Sumo.");
-        System.out.println("What can I do for you?");
-        System.out.println(separator);
+        ui.showWelcome();
 
-        Scanner scanner = new Scanner(System.in);
-        while (scanner.hasNextLine()) {
-            String command = scanner.nextLine().trim();
-            System.out.println(separator);
+        while (ui.hasNextCommand()) {
+            String command = ui.readCommand();
+            ui.showSeparator();
 
             if (command.equals("bye")) {
-                System.out.println("Bye. Hope to see you again soon!");
-                System.out.println(separator);
+                ui.showGoodbye();
                 break;
             }
 
             try {
-                handleCommand(command, tasks);
+                handleCommand(command, tasks, ui);
             } catch (SumoException exception) {
-                System.out.println(" I could not complete that command: " + exception.getMessage());
+                ui.showCommandError(exception.getMessage());
             } catch (IOException exception) {
-                System.out.println(" I could not save your tasks: " + getErrorMessage(exception));
+                ui.showSavingError(getErrorMessage(exception));
             }
 
-            System.out.println(separator);
+            ui.showSeparator();
         }
     }
 
@@ -89,19 +77,17 @@ public class Sumo {
      *
      * @param command the command entered by the user
      * @param tasks the task list
+     * @param ui the console interface used to display command results
      * @throws SumoException if the command is not valid
      */
-    private static void handleCommand(String command, List<Task> tasks) throws SumoException, IOException {
+    private static void handleCommand(String command, List<Task> tasks, Ui ui) throws SumoException, IOException {
         if (command.equals("list")) {
-            System.out.println(" Here are the tasks in your list:");
-            for (int i = 0; i < tasks.size(); i++) {
-                System.out.println(" " + (i + 1) + "." + tasks.get(i));
-            }
+            ui.showTaskList(tasks);
             return;
         }
 
         if (command.equals("on") || command.startsWith("on ")) {
-            printTasksOnDate(command.substring(2).trim(), tasks);
+            printTasksOnDate(command.substring(2).trim(), tasks, ui);
             return;
         }
 
@@ -116,8 +102,7 @@ public class Sumo {
                 task.isDone = wasDone;
                 throw exception;
             }
-            System.out.println(" Nice! I've marked this task as done:");
-            System.out.println("   " + task);
+            ui.showTaskMarked(task);
             return;
         }
 
@@ -132,8 +117,7 @@ public class Sumo {
                 task.isDone = wasDone;
                 throw exception;
             }
-            System.out.println(" OK, I've marked this task as not done yet:");
-            System.out.println("   " + task);
+            ui.showTaskUnmarked(task);
             return;
         }
 
@@ -146,9 +130,7 @@ public class Sumo {
                 tasks.add(taskIndex, removedTask);
                 throw exception;
             }
-            System.out.println(" Noted. I've removed this task:");
-            System.out.println("   " + removedTask);
-            System.out.println(" Now you have " + tasks.size() + " tasks in the list.");
+            ui.showTaskDeleted(removedTask, tasks.size());
             return;
         }
 
@@ -183,9 +165,7 @@ public class Sumo {
             tasks.remove(tasks.size() - 1);
             throw exception;
         }
-        System.out.println(" Got it. I've added this task:");
-        System.out.println("   " + addedTask);
-        System.out.println(" Now you have " + tasks.size() + " tasks in the list.");
+        ui.showTaskAdded(addedTask, tasks.size());
     }
 
     /**
@@ -216,10 +196,11 @@ public class Sumo {
     /**
      * Loads tasks from the data file, or returns an empty list on the first run.
      *
+     * @param ui the console interface used to report invalid saved records
      * @return the tasks stored during the previous run
      * @throws IOException if the existing data file cannot be read
      */
-    private static List<Task> loadTasks() throws IOException {
+    private static List<Task> loadTasks(Ui ui) throws IOException {
         List<Task> tasks = new ArrayList<>();
         Files.createDirectories(DATA_DIRECTORY);
         if (Files.notExists(DATA_FILE)) {
@@ -235,8 +216,7 @@ public class Sumo {
             try {
                 tasks.add(parseTask(taskLine));
             } catch (IllegalArgumentException exception) {
-                System.out.println(" I could not load saved task on line " + (lineNumber + 1)
-                        + ": " + exception.getMessage());
+                ui.showInvalidTaskError(lineNumber + 1, exception.getMessage());
             }
         }
         return tasks;
@@ -248,9 +228,10 @@ public class Sumo {
      *
      * @param dateText the date supplied after the {@code on} command
      * @param tasks the task list to search
+     * @param ui the console interface used to display matching tasks
      * @throws SumoException if the date is missing or invalid
      */
-    private static void printTasksOnDate(String dateText, List<Task> tasks) throws SumoException {
+    private static void printTasksOnDate(String dateText, List<Task> tasks, Ui ui) throws SumoException {
         if (dateText.isBlank()) {
             throw new SumoException("Use: on <date>.");
         }
@@ -262,15 +243,13 @@ public class Sumo {
             throw new SumoException("Use: on <date>. Dates must use yyyy-MM-dd or d/M/yyyy.");
         }
 
-        System.out.println(" Here are the tasks on "
-                + DateTimeDisplay.format(date.atStartOfDay(), false) + ":");
-        int matchingTaskNumber = 1;
+        List<Task> matchingTasks = new ArrayList<>();
         for (Task task : tasks) {
             if (occursOn(task, date)) {
-                System.out.println(" " + matchingTaskNumber + "." + task);
-                matchingTaskNumber++;
+                matchingTasks.add(task);
             }
         }
+        ui.showTasksOnDate(date.atStartOfDay(), matchingTasks);
     }
 
     /**

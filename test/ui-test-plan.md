@@ -623,6 +623,29 @@ This file is the source of truth for the `test-ui` skill. Keep test cases determ
 
 Leave the test cases and expected outputs above unchanged when recording a run. Add a dated session below with the actual console transcript, overall result, and—if applicable—the first failure’s actual and expected output.
 
+### 2026-08-29 — PASS (instance-based Sumo coordinator)
+
+Concise exact-assertion transcript:
+
+```text
+$ java -version
+java version "25.0.4" 2026-07-21 LTS
+
+$ javac -d out src/main/java/DateTimeDisplay.java src/main/java/Deadline.java src/main/java/Event.java src/main/java/Parser.java src/main/java/Storage.java src/main/java/Sumo.java src/main/java/SumoException.java src/main/java/Task.java src/main/java/TaskList.java src/main/java/Todo.java src/main/java/Ui.java
+
+> UI-001 — exact response assertions matched
+> UI-002 — exact response assertions matched
+> UI-003 — exact response assertions matched
+> UI-004 — exact response assertions matched
+> UI-005 — exact response and six intermediate data/sumo.txt assertions matched
+> UI-006 — exact restart assertions matched
+> UI-007 — exact output and data-directory assertions matched
+> UI-008 — exact response assertions matched
+> UI-009 — exact response assertions matched
+```
+
+Result: All nine listed test cases passed under Java 25.0.4 after converting `Sumo` into an instance-based coordinator.
+
 ### 2026-08-29 — PASS (TaskList class extraction)
 
 Concise exact-assertion transcript:

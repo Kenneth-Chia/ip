@@ -79,6 +79,22 @@ public class TaskList {
         return matchingTasks;
     }
 
+    /**
+     * Finds tasks whose descriptions contain the requested keyword.
+     *
+     * @param keyword text to search for
+     * @return matching tasks in their original order
+     */
+    public List<Task> find(String keyword) {
+        List<Task> matchingTasks = new ArrayList<>();
+        for (Task task : tasks) {
+            if (task.getDescription().contains(keyword)) {
+                matchingTasks.add(task);
+            }
+        }
+        return matchingTasks;
+    }
+
     /** Determines whether a deadline or event covers the requested date. */
     private boolean occursOn(Task task, LocalDate date) {
         if (task instanceof Deadline deadline) {

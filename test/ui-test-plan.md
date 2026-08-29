@@ -6,8 +6,8 @@ This file is the source of truth for the `test-ui` skill. Keep test cases determ
 
 - Working directory: repository root
 - Java version: 25
-- Setup/compile command: `javac -d out src/main/java/Command.java src/main/java/DateTimeDisplay.java src/main/java/Deadline.java src/main/java/Event.java src/main/java/ExitCommand.java src/main/java/ListCommand.java src/main/java/OnCommand.java src/main/java/Parser.java src/main/java/Storage.java src/main/java/Sumo.java src/main/java/SumoException.java src/main/java/Task.java src/main/java/TaskList.java src/main/java/Todo.java src/main/java/Ui.java`
-- Program launch command: `java -cp out Sumo`
+- Setup/compile command: `javac -d out src/main/java/sumo/Sumo.java src/main/java/sumo/command/Command.java src/main/java/sumo/command/ExitCommand.java src/main/java/sumo/command/ListCommand.java src/main/java/sumo/command/OnCommand.java src/main/java/sumo/exception/SumoException.java src/main/java/sumo/parser/Parser.java src/main/java/sumo/storage/Storage.java src/main/java/sumo/task/DateTimeDisplay.java src/main/java/sumo/task/Deadline.java src/main/java/sumo/task/Event.java src/main/java/sumo/task/Task.java src/main/java/sumo/task/TaskList.java src/main/java/sumo/task/Todo.java src/main/java/sumo/ui/Ui.java`
+- Program launch command: `java -cp out sumo.Sumo`
 - Output comparison: exact, after normalizing Windows `CRLF` line endings to `LF`; each expected block contains only the response produced after its listed input
 - Test isolation: before each test case, run `Remove-Item -LiteralPath data/sumo.txt -ErrorAction SilentlyContinue`, then launch a fresh program process unless the case explicitly requires multiple continuous sessions
 
@@ -622,6 +622,84 @@ This file is the source of truth for the `test-ui` skill. Keep test cases determ
 ## Latest test session
 
 Leave the test cases and expected outputs above unchanged when recording a run. Add a dated session below with the actual console transcript, overall result, and—if applicable—the first failure’s actual and expected output.
+
+### 2026-08-29 — PASS (Java package organization)
+
+Concise exact-assertion transcript:
+
+```text
+$ java -version
+java version "25.0.4" 2026-07-21 LTS
+$ javac -d out src/main/java/sumo/Sumo.java src/main/java/sumo/command/Command.java src/main/java/sumo/command/ExitCommand.java src/main/java/sumo/command/ListCommand.java src/main/java/sumo/command/OnCommand.java src/main/java/sumo/exception/SumoException.java src/main/java/sumo/parser/Parser.java src/main/java/sumo/storage/Storage.java src/main/java/sumo/task/DateTimeDisplay.java src/main/java/sumo/task/Deadline.java src/main/java/sumo/task/Event.java src/main/java/sumo/task/Task.java src/main/java/sumo/task/TaskList.java src/main/java/sumo/task/Todo.java src/main/java/sumo/ui/Ui.java
+Compilation completed without errors.
+
+### UI-001
+> todo read book — exact response matched
+> list — exact response matched
+> bye — exact response matched
+
+### UI-002
+> todo return book — exact response matched
+> mark 1 — exact response matched
+> unmark 1 — exact response matched
+> bye — exact response matched
+
+### UI-003
+> todo — exact response matched
+> blah — exact response matched
+> deadline submit report — exact response matched
+> event meeting /from Monday — exact response matched
+> mark one — exact response matched
+> bye — exact response matched
+
+### UI-004
+> todo read book — exact response matched
+> deadline return book /by 2019-06-06 — exact response matched
+> delete 1 — exact response matched
+> list — exact response matched
+> bye — exact response matched
+
+### UI-005
+> todo read book — exact response and file content matched
+> deadline return book /by 2019-06-06 — exact response and file content matched
+> event project meeting /from 2019-08-06 1400 /to 2019-08-06 1600 — exact response and file content matched
+> mark 1 — exact response and file content matched
+> unmark 1 — exact response and file content matched
+> delete 2 — exact response and file content matched
+> bye — exact response matched
+
+### UI-006
+> todo read book — exact response matched
+> deadline return book /by 2019-06-06 — exact response matched
+> event project meeting /from 2019-08-06 1400 /to 2019-08-06 1600 — exact response matched
+> mark 2 — exact response matched
+> bye — exact response matched
+> list — exact response matched after restart
+> bye — exact response matched
+
+### UI-007
+> list — exact response matched
+> bye — exact response matched
+$ Test-Path data
+True
+
+### UI-008
+> deadline return book /by 2/12/2019 1800 — exact response matched
+> deadline submit report /by 2019-10-15 — exact response matched
+> list — exact response matched
+> bye — exact response matched
+
+### UI-009
+> todo read book — exact response matched
+> deadline return book /by 2019-10-15 — exact response matched
+> event project meeting /from 2019-10-14 0900 /to 2019-10-16 1700 — exact response matched
+> on 2019-10-15 — exact response matched
+> on 15/10/2019 — exact response matched
+> on 2019-10-17 — exact response matched
+> bye — exact response matched
+```
+
+Result: All nine listed test cases passed under Java 25.0.4 after organizing the source classes into packages.
 
 ### 2026-08-29 — PASS (command hierarchy foundation)
 

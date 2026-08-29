@@ -1,5 +1,14 @@
+package sumo;
+
 import java.io.IOException;
 import java.nio.file.Path;
+
+import sumo.command.Command;
+import sumo.exception.SumoException;
+import sumo.parser.Parser;
+import sumo.storage.Storage;
+import sumo.task.TaskList;
+import sumo.ui.Ui;
 
 /** Coordinates Sumo's user interface, parsing, task operations, and storage. */
 public class Sumo {

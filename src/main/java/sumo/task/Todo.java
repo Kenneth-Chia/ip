@@ -1,3 +1,5 @@
+package sumo.task;
+
 /**
  * A task that can be completed without a deadline or event time.
  *

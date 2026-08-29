@@ -1,3 +1,5 @@
+package sumo.task;
+
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
@@ -5,7 +7,7 @@ import java.util.Locale;
 /**
  * Formats typed date and time values for Sumo's user-facing output.
  */
-final class DateTimeDisplay {
+public final class DateTimeDisplay {
     private static final DateTimeFormatter DATE_FORMATTER =
             DateTimeFormatter.ofPattern("MMM dd yyyy", Locale.ENGLISH);
     private static final DateTimeFormatter DATE_TIME_FORMATTER =
@@ -22,7 +24,7 @@ final class DateTimeDisplay {
      * @param includesTime whether the time should be shown
      * @return the formatted value
      */
-    static String format(LocalDateTime value, boolean includesTime) {
+    public static String format(LocalDateTime value, boolean includesTime) {
         return value.format(includesTime ? DATE_TIME_FORMATTER : DATE_FORMATTER);
     }
 }

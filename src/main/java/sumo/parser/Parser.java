@@ -32,7 +32,9 @@ public class Parser {
             .withResolverStyle(ResolverStyle.STRICT);
 
     /** Identifies the action requested by a parsed command. */
-    public enum CommandType { MARK, UNMARK, DELETE, ADD }
+    public enum CommandType {
+        MARK, UNMARK, DELETE, ADD
+    }
 
     /** Holds the values Sumo needs to carry out one parsed command. */
     public static class ParsedCommand extends Command {
@@ -46,28 +48,36 @@ public class Parser {
             this.taskIndex = taskIndex;
         }
 
-        public CommandType getType() { return type; }
-        public Task getTask() { return task; }
-        public int getTaskIndex() { return taskIndex; }
+        public CommandType getType() {
+            return type;
+        }
+
+        public Task getTask() {
+            return task;
+        }
+
+        public int getTaskIndex() {
+            return taskIndex;
+        }
 
         /** Executes a mutation that has not yet been extracted into its own command class. */
         @Override
         public void execute(TaskList tasks, Ui ui, Storage storage) throws IOException {
             switch (type) {
-            case MARK:
-                updateTaskStatus(tasks, ui, storage, true);
-                break;
-            case UNMARK:
-                updateTaskStatus(tasks, ui, storage, false);
-                break;
-            case DELETE:
-                deleteTask(tasks, ui, storage);
-                break;
-            case ADD:
-                addTask(tasks, ui, storage);
-                break;
-            default:
-                throw new IllegalStateException("Unsupported task command.");
+                case MARK:
+                    updateTaskStatus(tasks, ui, storage, true);
+                    break;
+                case UNMARK:
+                    updateTaskStatus(tasks, ui, storage, false);
+                    break;
+                case DELETE:
+                    deleteTask(tasks, ui, storage);
+                    break;
+                case ADD:
+                    addTask(tasks, ui, storage);
+                    break;
+                default:
+                    throw new IllegalStateException("Unsupported task command.");
             }
         }
 
@@ -121,8 +131,12 @@ public class Parser {
      * @throws SumoException if the command or any argument is invalid
      */
     public Command parse(String command, int taskCount) throws SumoException {
-        if ("bye".equals(command)) { return new ExitCommand(); }
-        if ("list".equals(command)) { return new ListCommand(); }
+        if ("bye".equals(command)) {
+            return new ExitCommand();
+        }
+        if ("list".equals(command)) {
+            return new ListCommand();
+        }
         if ("on".equals(command) || command.startsWith("on ")) {
             return parseOn(command.substring(2).trim());
         }
@@ -166,7 +180,9 @@ public class Parser {
     }
 
     private Command parseOn(String dateText) throws SumoException {
-        if (dateText.isBlank()) { throw new SumoException("Use: on <date>."); }
+        if (dateText.isBlank()) {
+            throw new SumoException("Use: on <date>.");
+        }
         try {
             return new OnCommand(parseDate(dateText));
         } catch (DateTimeParseException exception) {
@@ -175,21 +191,29 @@ public class Parser {
     }
 
     private ParsedCommand indexedCommand(CommandType type, String text, int taskCount) throws SumoException {
-        if (text.isBlank()) { throw new SumoException("Please specify the number of the task to update."); }
+        if (text.isBlank()) {
+            throw new SumoException("Please specify the number of the task to update.");
+        }
         try {
             int index = Integer.parseInt(text) - 1;
-            if (index < 0 || index >= taskCount) { throw new SumoException("That task number is not in your list."); }
+            if (index < 0 || index >= taskCount) {
+                throw new SumoException("That task number is not in your list.");
+            }
             return new ParsedCommand(type, null, index);
         } catch (NumberFormatException exception) {
             throw new SumoException("Task numbers must be whole numbers.");
         }
     }
 
-    private ParsedCommand addCommand(Task task) { return new ParsedCommand(CommandType.ADD, task, -1); }
+    private ParsedCommand addCommand(Task task) {
+        return new ParsedCommand(CommandType.ADD, task, -1);
+    }
 
     private String[] splitCommand(String text, String marker, String message) throws SumoException {
         int markerIndex = text.indexOf(marker);
-        if (markerIndex < 0) { throw new SumoException(message); }
+        if (markerIndex < 0) {
+            throw new SumoException(message);
+        }
         String first = text.substring(0, markerIndex).trim();
         String second = text.substring(markerIndex + marker.length()).trim();
         ensureNotBlank(first, message);
@@ -205,7 +229,9 @@ public class Parser {
         String toMarker = " /to ";
         int fromIndex = text.indexOf(fromMarker);
         int toIndex = text.indexOf(toMarker, fromIndex + fromMarker.length());
-        if (fromIndex < 0 || toIndex < 0) { throw new SumoException(message); }
+        if (fromIndex < 0 || toIndex < 0) {
+            throw new SumoException(message);
+        }
         String description = text.substring(0, fromIndex).trim();
         String from = text.substring(fromIndex + fromMarker.length(), toIndex).trim();
         String to = text.substring(toIndex + toMarker.length()).trim();
@@ -221,9 +247,12 @@ public class Parser {
     private ParsedDateTime parseDateTime(String text, String message) throws SumoException {
         try {
             String[] parts = text.trim().split("\\s+");
-            if (parts.length == 1) { return new ParsedDateTime(parseDate(parts[0]).atStartOfDay(), false); }
+            if (parts.length == 1) {
+                return new ParsedDateTime(parseDate(parts[0]).atStartOfDay(), false);
+            }
             if (parts.length == 2) {
-                return new ParsedDateTime(LocalDateTime.of(parseDate(parts[0]), LocalTime.parse(parts[1], TIME)), true);
+                return new ParsedDateTime(
+                        LocalDateTime.of(parseDate(parts[0]), LocalTime.parse(parts[1], TIME)), true);
             }
         } catch (DateTimeParseException exception) {
             // Use the consistent, user-friendly error below.
@@ -232,16 +261,23 @@ public class Parser {
     }
 
     private LocalDate parseDate(String text) throws DateTimeParseException {
-        try { return LocalDate.parse(text, ISO_DATE); }
-        catch (DateTimeParseException exception) { return LocalDate.parse(text, DAY_MONTH_DATE); }
+        try {
+            return LocalDate.parse(text, ISO_DATE);
+        } catch (DateTimeParseException exception) {
+            return LocalDate.parse(text, DAY_MONTH_DATE);
+        }
     }
 
     private void ensureNotBlank(String text, String message) throws SumoException {
-        if (text == null || text.isBlank()) { throw new SumoException(message); }
+        if (text == null || text.isBlank()) {
+            throw new SumoException(message);
+        }
     }
 
     private void ensurePersistable(String text) throws SumoException {
-        if (text.contains(" | ")) { throw new SumoException("Task text cannot contain ' | '."); }
+        if (text.contains(" | ")) {
+            throw new SumoException("Task text cannot contain ' | '.");
+        }
     }
 
     private static class ParsedDateTime {

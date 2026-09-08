@@ -8,10 +8,25 @@ import sumo.ui.Ui;
 
 /** Represents one user instruction that can be executed by Sumo. */
 public abstract class Command {
-    /** Carries out this command using the application's collaborators. */
+    /** Creates a command. */
+    protected Command() {
+    }
+
+    /**
+     * Carries out this command using the application's collaborators.
+     *
+     * @param tasks task list on which the command operates
+     * @param ui user interface through which the command displays output
+     * @param storage storage used to persist task-list changes
+     * @throws IOException if a task-list change cannot be saved
+     */
     public abstract void execute(TaskList tasks, Ui ui, Storage storage) throws IOException;
 
-    /** @return whether this command should end the application */
+    /**
+     * Returns whether this command should end the application.
+     *
+     * @return whether this command should end the application
+     */
     public boolean isExit() {
         return false;
     }

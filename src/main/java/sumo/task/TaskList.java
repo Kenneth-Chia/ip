@@ -24,37 +24,69 @@ public class TaskList {
         this.tasks = new ArrayList<>(tasks);
     }
 
-    /** @return the number of tasks in the list */
+    /**
+     * Returns the number of tasks in the list.
+     *
+     * @return the number of tasks in the list
+     */
     public int size() {
         return tasks.size();
     }
 
-    /** @return a read-only snapshot of the tasks in their current order */
+    /**
+     * Returns a read-only snapshot of the tasks in their current order.
+     *
+     * @return a read-only snapshot of the tasks in their current order
+     */
     public List<Task> getTasks() {
         return List.copyOf(tasks);
     }
 
-    /** @return the task at the given zero-based index */
+    /**
+     * Returns the task at the given zero-based index.
+     *
+     * @param index zero-based position of the task
+     * @return the task at the given index
+     */
     public Task get(int index) {
         return tasks.get(index);
     }
 
-    /** Adds a task to the end of the list. */
+    /**
+     * Adds a task to the end of the list.
+     *
+     * @param task task to add
+     */
     public void add(Task task) {
         tasks.add(task);
     }
 
-    /** Removes and returns the task at the given zero-based index. */
+    /**
+     * Removes and returns the task at the given zero-based index.
+     *
+     * @param index zero-based position of the task
+     * @return the removed task
+     */
     public Task delete(int index) {
         return tasks.remove(index);
     }
 
-    /** Reinserts a task at a specific position when an operation is rolled back. */
+    /**
+     * Reinserts a task at a specific position when an operation is rolled back.
+     *
+     * @param index zero-based position at which to insert the task
+     * @param task task to insert
+     */
     public void insert(int index, Task task) {
         tasks.add(index, task);
     }
 
-    /** Updates the completion status of one task. */
+    /**
+     * Updates the completion status of one task.
+     *
+     * @param index zero-based position of the task
+     * @param isDone whether the task should be marked complete
+     */
     public void setDone(int index, boolean isDone) {
         if (isDone) {
             tasks.get(index).markAsDone();

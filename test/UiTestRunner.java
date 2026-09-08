@@ -304,7 +304,8 @@ public class UiTestRunner {
 
     private List<String> splitCommand(String command) {
         if (command.contains("\"") || command.contains("'")) {
-            throw new IllegalArgumentException("Quoted arguments are not supported in documented commands: " + command);
+            throw new IllegalArgumentException(
+                    "Quoted arguments are not supported in documented commands: " + command);
         }
         return List.of(command.trim().split("\\s+"));
     }

@@ -10,6 +10,14 @@ java {
     targetCompatibility = JavaVersion.VERSION_25
 }
 
+sourceSets {
+    test {
+        java {
+            srcDir 'test'
+        }
+    }
+}
+
 checkstyle {
     toolVersion = '10.24.0'
 }

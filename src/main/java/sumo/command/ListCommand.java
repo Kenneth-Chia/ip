@@ -8,6 +8,10 @@ import sumo.ui.Ui;
 
 /** Displays every task in the task list. */
 public class ListCommand extends Command {
+    /** Creates a command that displays the task list. */
+    public ListCommand() {
+    }
+
     /** {@inheritDoc} */
     @Override
     public void execute(TaskList tasks, Ui ui, Storage storage) throws IOException {

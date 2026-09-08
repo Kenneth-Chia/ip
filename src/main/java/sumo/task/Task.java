@@ -4,7 +4,9 @@ package sumo.task;
  * Represents a task entered by the user.
  */
 public class Task {
+    /** Description supplied by the user. */
     protected String description;
+    /** Indicates whether the task has been completed. */
     protected boolean isDone;
 
     /**
@@ -72,7 +74,11 @@ public class Task {
         isDone = false;
     }
 
-    /** @return whether this task has been completed */
+    /**
+     * Returns whether this task has been completed.
+     *
+     * @return whether this task has been completed
+     */
     public boolean isDone() {
         return isDone;
     }

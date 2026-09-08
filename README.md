@@ -83,3 +83,17 @@ Prerequisites: JDK 25, update Intellij to the most recent version.
    ```
 
 **Warning:** Keep the `src\main\java` folder as the root folder for Java files (i.e., don't rename those folders or move Java files to another folder outside of this folder path), as this is the default location some tools (e.g., Gradle) expect to find Java files.
+
+## Checking the Java coding standard
+
+This project uses Checkstyle to automate part of the SE-EDU Java coding standard. Run the
+following command from the repository root before submitting changes:
+
+```powershell
+.\gradlew.bat checkstyleMain checkstyleTest
+```
+
+The Checkstyle configuration is in `config/checkstyle/checkstyle.xml`, with test-specific
+exceptions in `config/checkstyle/suppressions.xml`. To get feedback while coding in IntelliJ,
+install the Checkstyle-IDEA plugin and import the local `config/checkstyle/checkstyle.xml` file
+using Checkstyle version 10.24.0.

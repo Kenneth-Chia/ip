@@ -56,7 +56,11 @@ public class Sumo {
         }
     }
 
-    /** Starts Sumo using its default task file. */
+    /**
+     * Starts Sumo using its default task file.
+     *
+     * @param args command-line arguments, which Sumo ignores
+     */
     public static void main(String[] args) {
         new Sumo(Path.of("data", "sumo.txt").toString()).run();
     }

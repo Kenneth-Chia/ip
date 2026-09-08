@@ -34,7 +34,18 @@ public class Parser {
 
     /** Identifies the action requested by a parsed command. */
     public enum CommandType {
-        MARK, UNMARK, DELETE, ADD
+        /** Marks a task as complete. */
+        MARK,
+        /** Marks a task as incomplete. */
+        UNMARK,
+        /** Deletes a task. */
+        DELETE,
+        /** Adds a task. */
+        ADD
+    }
+
+    /** Creates a parser for Sumo commands. */
+    public Parser() {
     }
 
     /** Holds the values Sumo needs to carry out one parsed command. */
@@ -49,17 +60,29 @@ public class Parser {
             this.taskIndex = taskIndex;
         }
 
-        /** @return action represented by this command */
+        /**
+         * Returns the action represented by this command.
+         *
+         * @return action represented by this command
+         */
         public CommandType getType() {
             return type;
         }
 
-        /** @return task to add, or {@code null} for commands that target an existing task */
+        /**
+         * Returns the task to add.
+         *
+         * @return task to add, or {@code null} for commands that target an existing task
+         */
         public Task getTask() {
             return task;
         }
 
-        /** @return zero-based target index, or {@code -1} when adding a task */
+        /**
+         * Returns the zero-based target index.
+         *
+         * @return zero-based target index, or {@code -1} when adding a task
+         */
         public int getTaskIndex() {
             return taskIndex;
         }

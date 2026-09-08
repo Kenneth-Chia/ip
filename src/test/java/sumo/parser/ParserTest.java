@@ -97,8 +97,7 @@ public class ParserTest {
     public void parse_blankRequiredArguments_exceptionThrown() {
         assertThrows(SumoException.class, () -> parser.parse("todo", 0));
         assertThrows(SumoException.class, () -> parser.parse("deadline /by 2026-02-03", 0));
-        assertThrows(SumoException.class,
-                () -> parser.parse("event camp /from 2026-02-03 /to", 0));
+        assertThrows(SumoException.class, () -> parser.parse("event camp /from 2026-02-03 /to", 0));
         assertThrows(SumoException.class, () -> parser.parse("mark", 1));
         assertThrows(SumoException.class, () -> parser.parse("on", 0));
         assertThrows(SumoException.class, () -> parser.parse("find", 0));
@@ -107,12 +106,9 @@ public class ParserTest {
     /** Verifies rejection of invalid dates and times. */
     @Test
     public void parse_invalidDatesAndTimes_exceptionThrown() {
-        assertThrows(SumoException.class,
-                () -> parser.parse("deadline report /by 2025-02-29", 0));
-        assertThrows(SumoException.class,
-                () -> parser.parse("deadline report /by 2026-02-03 2400", 0));
-        assertThrows(SumoException.class,
-                () -> parser.parse("event camp /from tomorrow /to 2026-02-03", 0));
+        assertThrows(SumoException.class, () -> parser.parse("deadline report /by 2025-02-29", 0));
+        assertThrows(SumoException.class, () -> parser.parse("deadline report /by 2026-02-03 2400", 0));
+        assertThrows(SumoException.class, () -> parser.parse("event camp /from tomorrow /to 2026-02-03", 0));
     }
 
     /** Verifies rejection of invalid task numbers. */
@@ -127,8 +123,7 @@ public class ParserTest {
     @Test
     public void parse_persistenceDelimiterInTaskData_exceptionThrown() {
         assertThrows(SumoException.class, () -> parser.parse("todo first | second", 0));
-        assertThrows(SumoException.class,
-                () -> parser.parse("deadline report /by 2026-02-03 | extra", 0));
+        assertThrows(SumoException.class, () -> parser.parse("deadline report /by 2026-02-03 | extra", 0));
     }
 
     /** Verifies rejection of unrecognised commands. */

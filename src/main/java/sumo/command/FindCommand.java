@@ -10,7 +10,11 @@ import sumo.ui.Ui;
 public class FindCommand extends Command {
     private final String keyword;
 
-    /** Creates a command that searches task descriptions for the given keyword. */
+    /**
+     * Creates a command that searches task descriptions for the given keyword.
+     *
+     * @param keyword text to search for in task descriptions
+     */
     public FindCommand(String keyword) {
         this.keyword = keyword;
     }

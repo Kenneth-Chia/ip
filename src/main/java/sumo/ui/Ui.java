@@ -26,12 +26,20 @@ public class Ui {
         this.scanner = new Scanner(System.in);
     }
 
-    /** @return whether another console command is available */
+    /**
+     * Returns whether another console command is available.
+     *
+     * @return whether another console command is available
+     */
     public boolean hasNextCommand() {
         return scanner.hasNextLine();
     }
 
-    /** @return the next command, with surrounding whitespace removed */
+    /**
+     * Returns the next command with surrounding whitespace removed.
+     *
+     * @return the next command, with surrounding whitespace removed
+     */
     public String readCommand() {
         return scanner.nextLine().trim();
     }
@@ -56,27 +64,48 @@ public class Ui {
         showSeparator();
     }
 
-    /** Shows a command validation error. */
+    /**
+     * Shows a command validation error.
+     *
+     * @param message description of the validation error
+     */
     public void showCommandError(String message) {
         System.out.println(" I could not complete that command: " + message);
     }
 
-    /** Shows a file loading error. */
+    /**
+     * Shows a file loading error.
+     *
+     * @param message description of the loading error
+     */
     public void showLoadingError(String message) {
         System.out.println(" I could not load your saved tasks: " + message);
     }
 
-    /** Shows an invalid saved-task record while allowing other records to load. */
+    /**
+     * Shows an invalid saved-task record while allowing other records to load.
+     *
+     * @param lineNumber one-based line number of the invalid record
+     * @param message description of the record error
+     */
     public void showInvalidTaskError(int lineNumber, String message) {
         System.out.println(" I could not load saved task on line " + lineNumber + ": " + message);
     }
 
-    /** Shows a file saving error. */
+    /**
+     * Shows a file saving error.
+     *
+     * @param message description of the saving error
+     */
     public void showSavingError(String message) {
         System.out.println(" I could not save your tasks: " + message);
     }
 
-    /** Shows all tasks in their current order. */
+    /**
+     * Shows all tasks in their current order.
+     *
+     * @param tasks tasks to display
+     */
     public void showTaskList(List<Task> tasks) {
         System.out.println(" Here are the tasks in your list:");
         for (int i = 0; i < tasks.size(); i++) {
@@ -84,7 +113,11 @@ public class Ui {
         }
     }
 
-    /** Shows tasks whose descriptions contain the requested keyword. */
+    /**
+     * Shows tasks whose descriptions contain the requested keyword.
+     *
+     * @param tasks matching tasks to display
+     */
     public void showMatchingTasks(List<Task> tasks) {
         System.out.println(" Here are the matching tasks in your list:");
         for (int i = 0; i < tasks.size(); i++) {
@@ -92,7 +125,12 @@ public class Ui {
         }
     }
 
-    /** Shows tasks that occur on the requested date. */
+    /**
+     * Shows tasks that occur on the requested date.
+     *
+     * @param date requested date
+     * @param tasks tasks occurring on the requested date
+     */
     public void showTasksOnDate(LocalDateTime date, List<Task> tasks) {
         System.out.println(" Here are the tasks on " + DateTimeDisplay.format(date, false) + ":");
         for (int i = 0; i < tasks.size(); i++) {
@@ -100,26 +138,44 @@ public class Ui {
         }
     }
 
-    /** Shows a task that was added and the new list size. */
+    /**
+     * Shows a task that was added and the new list size.
+     *
+     * @param task task that was added
+     * @param taskCount number of tasks after the addition
+     */
     public void showTaskAdded(Task task, int taskCount) {
         System.out.println(" Got it. I've added this task:");
         System.out.println("   " + task);
         System.out.println(" Now you have " + taskCount + " tasks in the list.");
     }
 
-    /** Shows a task that was marked complete. */
+    /**
+     * Shows a task that was marked complete.
+     *
+     * @param task task that was marked complete
+     */
     public void showTaskMarked(Task task) {
         System.out.println(" Nice! I've marked this task as done:");
         System.out.println("   " + task);
     }
 
-    /** Shows a task that was marked incomplete. */
+    /**
+     * Shows a task that was marked incomplete.
+     *
+     * @param task task that was marked incomplete
+     */
     public void showTaskUnmarked(Task task) {
         System.out.println(" OK, I've marked this task as not done yet:");
         System.out.println("   " + task);
     }
 
-    /** Shows a task that was deleted and the new list size. */
+    /**
+     * Shows a task that was deleted and the new list size.
+     *
+     * @param task task that was deleted
+     * @param taskCount number of tasks after the deletion
+     */
     public void showTaskDeleted(Task task, int taskCount) {
         System.out.println(" Noted. I've removed this task:");
         System.out.println("   " + task);

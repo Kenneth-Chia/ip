@@ -2,6 +2,8 @@
 
 This file is the source of truth for the `test-ui` skill. Keep test cases deterministic and update expected output only when the intended UI behavior changes.
 
+The JavaFX-specific manual checks are documented separately in [gui-test-plan.md](gui-test-plan.md).
+
 ## Execution information
 
 - Working directory: repository root

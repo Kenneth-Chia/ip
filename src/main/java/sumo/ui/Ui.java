@@ -3,6 +3,7 @@ package sumo.ui;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Scanner;
+import java.util.function.Consumer;
 
 import sumo.task.DateTimeDisplay;
 import sumo.task.Task;
@@ -20,10 +21,21 @@ public class Ui {
             + "██████    ██████  ██      ██  ██████";
 
     private final Scanner scanner;
+    private final Consumer<String> output;
 
     /** Creates a UI that reads commands from standard input. */
     public Ui() {
+        this(System.out::println);
+    }
+
+    /**
+     * Creates a UI that sends each output line to the given destination.
+     *
+     * @param output destination for response lines
+     */
+    public Ui(Consumer<String> output) {
         this.scanner = new Scanner(System.in);
+        this.output = output;
     }
 
     /**
@@ -46,22 +58,21 @@ public class Ui {
 
     /** Shows the application greeting. */
     public void showWelcome() {
-        System.out.println(SEPARATOR);
-        System.out.println(BANNER);
-        System.out.println("Hello! I'm Sumo.");
-        System.out.println("What can I do for you?");
-        System.out.println(SEPARATOR);
+        output.accept(SEPARATOR);
+        output.accept(BANNER);
+        output.accept("Hello! I'm Sumo.");
+        output.accept("What can I do for you?");
+        output.accept(SEPARATOR);
     }
 
     /** Shows the divider between commands and responses. */
     public void showSeparator() {
-        System.out.println(SEPARATOR);
+        output.accept(SEPARATOR);
     }
 
     /** Shows the farewell message. */
     public void showGoodbye() {
-        System.out.println("Bye. Hope to see you again soon!");
-        showSeparator();
+        output.accept("Bye. Hope to see you again soon!");
     }
 
     /**
@@ -70,7 +81,7 @@ public class Ui {
      * @param message description of the validation error
      */
     public void showCommandError(String message) {
-        System.out.println(" I could not complete that command: " + message);
+        output.accept(" I could not complete that command: " + message);
     }
 
     /**
@@ -79,7 +90,7 @@ public class Ui {
      * @param message description of the loading error
      */
     public void showLoadingError(String message) {
-        System.out.println(" I could not load your saved tasks: " + message);
+        output.accept(" I could not load your saved tasks: " + message);
     }
 
     /**
@@ -89,7 +100,7 @@ public class Ui {
      * @param message description of the record error
      */
     public void showInvalidTaskError(int lineNumber, String message) {
-        System.out.println(" I could not load saved task on line " + lineNumber + ": " + message);
+        output.accept(" I could not load saved task on line " + lineNumber + ": " + message);
     }
 
     /**
@@ -98,7 +109,7 @@ public class Ui {
      * @param message description of the saving error
      */
     public void showSavingError(String message) {
-        System.out.println(" I could not save your tasks: " + message);
+        output.accept(" I could not save your tasks: " + message);
     }
 
     /**
@@ -107,9 +118,9 @@ public class Ui {
      * @param tasks tasks to display
      */
     public void showTaskList(List<Task> tasks) {
-        System.out.println(" Here are the tasks in your list:");
+        output.accept(" Here are the tasks in your list:");
         for (int i = 0; i < tasks.size(); i++) {
-            System.out.println(" " + (i + 1) + "." + tasks.get(i));
+            output.accept(" " + (i + 1) + "." + tasks.get(i));
         }
     }
 
@@ -119,9 +130,9 @@ public class Ui {
      * @param tasks matching tasks to display
      */
     public void showMatchingTasks(List<Task> tasks) {
-        System.out.println(" Here are the matching tasks in your list:");
+        output.accept(" Here are the matching tasks in your list:");
         for (int i = 0; i < tasks.size(); i++) {
-            System.out.println(" " + (i + 1) + "." + tasks.get(i));
+            output.accept(" " + (i + 1) + "." + tasks.get(i));
         }
     }
 
@@ -132,9 +143,9 @@ public class Ui {
      * @param tasks tasks occurring on the requested date
      */
     public void showTasksOnDate(LocalDateTime date, List<Task> tasks) {
-        System.out.println(" Here are the tasks on " + DateTimeDisplay.format(date, false) + ":");
+        output.accept(" Here are the tasks on " + DateTimeDisplay.format(date, false) + ":");
         for (int i = 0; i < tasks.size(); i++) {
-            System.out.println(" " + (i + 1) + "." + tasks.get(i));
+            output.accept(" " + (i + 1) + "." + tasks.get(i));
         }
     }
 
@@ -145,9 +156,9 @@ public class Ui {
      * @param taskCount number of tasks after the addition
      */
     public void showTaskAdded(Task task, int taskCount) {
-        System.out.println(" Got it. I've added this task:");
-        System.out.println("   " + task);
-        System.out.println(" Now you have " + taskCount + " tasks in the list.");
+        output.accept(" Got it. I've added this task:");
+        output.accept("   " + task);
+        output.accept(" Now you have " + taskCount + " tasks in the list.");
     }
 
     /**
@@ -156,8 +167,8 @@ public class Ui {
      * @param task task that was marked complete
      */
     public void showTaskMarked(Task task) {
-        System.out.println(" Nice! I've marked this task as done:");
-        System.out.println("   " + task);
+        output.accept(" Nice! I've marked this task as done:");
+        output.accept("   " + task);
     }
 
     /**
@@ -166,8 +177,8 @@ public class Ui {
      * @param task task that was marked incomplete
      */
     public void showTaskUnmarked(Task task) {
-        System.out.println(" OK, I've marked this task as not done yet:");
-        System.out.println("   " + task);
+        output.accept(" OK, I've marked this task as not done yet:");
+        output.accept("   " + task);
     }
 
     /**
@@ -177,8 +188,8 @@ public class Ui {
      * @param taskCount number of tasks after the deletion
      */
     public void showTaskDeleted(Task task, int taskCount) {
-        System.out.println(" Noted. I've removed this task:");
-        System.out.println("   " + task);
-        System.out.println(" Now you have " + taskCount + " tasks in the list.");
+        output.accept(" Noted. I've removed this task:");
+        output.accept("   " + task);
+        output.accept(" Now you have " + taskCount + " tasks in the list.");
     }
 }

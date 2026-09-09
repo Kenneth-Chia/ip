@@ -12,10 +12,18 @@ import sumo.ui.Ui;
 
 /** Coordinates Sumo's user interface, parsing, task operations, and storage. */
 public class Sumo {
+    private static final String DEFAULT_FILE_PATH = Path.of("data", "sumo.txt").toString();
+
     private final Ui ui;
     private final Storage storage;
     private final Parser parser;
     private final TaskList tasks;
+    private boolean isExit;
+
+    /** Creates a Sumo application backed by the default task file. */
+    public Sumo() {
+        this(DEFAULT_FILE_PATH);
+    }
 
     /**
      * Creates a Sumo application backed by the given task file.
@@ -34,26 +42,45 @@ public class Sumo {
             ui.showLoadingError(getErrorMessage(exception));
         }
         this.tasks = loadedTasks;
+        this.isExit = false;
     }
 
     /** Starts the command-reading loop. */
     public void run() {
         ui.showWelcome();
-        boolean isExit = false;
         while (!isExit && ui.hasNextCommand()) {
             String input = ui.readCommand();
             ui.showSeparator();
-            try {
-                Command command = parser.parse(input, tasks.size());
-                command.execute(tasks, ui, storage);
-                isExit = command.isExit();
-            } catch (SumoException exception) {
-                ui.showCommandError(exception.getMessage());
-            } catch (IOException exception) {
-                ui.showSavingError(getErrorMessage(exception));
-            }
+            executeCommand(input, ui);
             ui.showSeparator();
         }
+    }
+
+    /**
+     * Returns Sumo's response to one GUI command.
+     *
+     * @param input command entered by the user
+     * @return response text to display in the GUI
+     */
+    public String getResponse(String input) {
+        StringBuilder response = new StringBuilder();
+        Ui responseUi = new Ui(line -> {
+            if (!response.isEmpty()) {
+                response.append(System.lineSeparator());
+            }
+            response.append(line);
+        });
+        executeCommand(input.trim(), responseUi);
+        return response.toString().strip();
+    }
+
+    /**
+     * Returns whether the user has ended the current session.
+     *
+     * @return whether an exit command has been executed
+     */
+    public boolean isExit() {
+        return isExit;
     }
 
     /**
@@ -62,7 +89,20 @@ public class Sumo {
      * @param args command-line arguments, which Sumo ignores
      */
     public static void main(String[] args) {
-        new Sumo(Path.of("data", "sumo.txt").toString()).run();
+        new Sumo().run();
+    }
+
+    /** Executes one command and sends its response to the supplied UI. */
+    private void executeCommand(String input, Ui responseUi) {
+        try {
+            Command command = parser.parse(input, tasks.size());
+            command.execute(tasks, responseUi, storage);
+            isExit = command.isExit();
+        } catch (SumoException exception) {
+            responseUi.showCommandError(exception.getMessage());
+        } catch (IOException exception) {
+            responseUi.showSavingError(getErrorMessage(exception));
+        }
     }
 
     /** Extracts a useful display message from a storage exception. */

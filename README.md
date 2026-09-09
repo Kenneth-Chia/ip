@@ -13,7 +13,21 @@ Prerequisites: JDK 25, update Intellij to the most recent version.
    1. If there are any further prompts, accept the defaults.
 1. Configure the project to use **JDK 25** (not other versions) as explained in [here](https://www.jetbrains.com/help/idea/sdk.html#set-up-jdk).<br>
    In the same dialog, set the **Project language level** field to the `SDK default` option.
-1. After that, locate the `src/main/java/Sumo.java` file, right-click it, and choose `Run Sumo.main()` (if the code editor is showing compile errors, try restarting the IDE). If the setup is correct, you should see something like the below as the output:
+1. After that, run `./gradlew run` (macOS/Linux) or `.\gradlew.bat run` (Windows) from the
+   project root. Alternatively, run `sumo.Launcher.main()` from IntelliJ. The application opens a
+   simple chat window with a command field and a **Send** button.
+
+   Add your own avatar images at the following paths. The GUI also works while either image is
+   missing.
+
+   - `src/main/resources/images/DaUser.png`
+   - `src/main/resources/images/DaSumo.png`
+
+   Enter the same commands supported by the console version, such as `todo read book`, `list`,
+   `mark 1`, and `bye`. Press **Enter** or click **Send** to submit a command.
+
+   The original console interface remains available by running `sumo.Sumo.main()`. If the setup is
+   correct, its output should look like the following:
    ```
    ____________________________________________________________
      ██████  ██    ██ ███    ███  ██████

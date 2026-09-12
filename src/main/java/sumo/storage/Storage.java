@@ -115,7 +115,14 @@ public class Storage {
 
         String[] taskData = taskLine.split(FIELD_SEPARATOR_REGEX, -1);
         TaskType taskType = TaskType.fromStorageCode(taskData[TYPE_INDEX]);
+        validateTaskData(taskData, taskType);
+        Task task = createTask(taskData, taskType);
+        restoreCompletionStatus(task, taskData[STATUS_INDEX]);
+        return task;
+    }
 
+    /** Validates the fields required by one stored task record. */
+    private void validateTaskData(String[] taskData, TaskType taskType) {
         if (taskData.length != taskType.getStoredFieldCount()) {
             throw new IllegalArgumentException("Invalid number of fields in data file.");
         }
@@ -128,8 +135,11 @@ public class Storage {
                 throw new IllegalArgumentException("Task fields in data file cannot be blank.");
             }
         }
+    }
 
-        Task task = switch (taskType) {
+    /** Creates a task from validated stored fields. */
+    private Task createTask(String[] taskData, TaskType taskType) {
+        return switch (taskType) {
             case TODO -> new Todo(taskData[DESCRIPTION_INDEX]);
             case DEADLINE -> {
                 ParsedDateTime deadline = parseStoredDateTime(taskData[FIRST_DATE_INDEX]);
@@ -142,11 +152,13 @@ public class Storage {
                         from.hasTime, to.hasTime);
             }
         };
+    }
 
-        if (completionStatus.equals(COMPLETE_STATUS)) {
+    /** Restores the completion state encoded in a stored task record. */
+    private void restoreCompletionStatus(Task task, String completionStatus) {
+        if (COMPLETE_STATUS.equals(completionStatus)) {
             task.markAsDone();
         }
-        return task;
     }
 
     /** Parses a canonical date or date-time stored in the data file. */

@@ -174,37 +174,62 @@ public class Parser {
         if ("list".equals(command)) {
             return new ListCommand();
         }
-        if ("find".equals(command) || command.startsWith("find ")) {
-            String keyword = command.substring(4).trim();
+        return parseCommandWithArgument(command, taskCount);
+    }
+
+    /** Parses commands that either query or mutate tasks through an argument. */
+    private Command parseCommandWithArgument(String command, int taskCount) throws SumoException {
+        if (isCommand(command, "find")) {
+            String keyword = getCommandArgument(command, "find");
             ensureNotBlank(keyword, "Please add a keyword after 'find'.");
             return new FindCommand(keyword);
         }
-        if ("on".equals(command) || command.startsWith("on ")) {
-            return parseOn(command.substring(2).trim());
+        if (isCommand(command, "on")) {
+            return parseOn(getCommandArgument(command, "on"));
         }
-        if ("mark".equals(command) || command.startsWith("mark ")) {
-            return indexedCommand(CommandType.MARK, command.substring(4).trim(), taskCount);
+        return parseIndexedOrAddCommand(command, taskCount);
+    }
+
+    /** Parses commands that target an existing task or add a new task. */
+    private Command parseIndexedOrAddCommand(String command, int taskCount) throws SumoException {
+        if (isCommand(command, "mark")) {
+            return indexedCommand(CommandType.MARK, getCommandArgument(command, "mark"), taskCount);
         }
-        if ("unmark".equals(command) || command.startsWith("unmark ")) {
-            return indexedCommand(CommandType.UNMARK, command.substring(6).trim(), taskCount);
+        if (isCommand(command, "unmark")) {
+            return indexedCommand(CommandType.UNMARK, getCommandArgument(command, "unmark"), taskCount);
         }
-        if ("delete".equals(command) || command.startsWith("delete ")) {
-            return indexedCommand(CommandType.DELETE, command.substring(6).trim(), taskCount);
+        if (isCommand(command, "delete")) {
+            return indexedCommand(CommandType.DELETE, getCommandArgument(command, "delete"), taskCount);
         }
-        if ("todo".equals(command) || command.startsWith("todo ")) {
-            String description = command.substring(4).trim();
+        return parseTaskCreationCommand(command);
+    }
+
+    /** Parses commands that create todo, deadline, or event tasks. */
+    private Command parseTaskCreationCommand(String command) throws SumoException {
+        if (isCommand(command, "todo")) {
+            String description = getCommandArgument(command, "todo");
             ensureNotBlank(description, "Please add a description after 'todo'.");
             ensurePersistable(description);
             return addCommand(new Todo(description));
         }
-        if ("deadline".equals(command) || command.startsWith("deadline ")) {
-            return parseDeadline(command.substring(8).trim());
+        if (isCommand(command, "deadline")) {
+            return parseDeadline(getCommandArgument(command, "deadline"));
         }
-        if ("event".equals(command) || command.startsWith("event ")) {
-            return parseEvent(command.substring(5).trim());
+        if (isCommand(command, "event")) {
+            return parseEvent(getCommandArgument(command, "event"));
         }
         throw new SumoException("I do not recognise that command. "
                 + "Try todo, deadline, event, list, find, on, mark, unmark, or delete.");
+    }
+
+    /** Returns whether input is the command itself or starts with its argument separator. */
+    private boolean isCommand(String input, String command) {
+        return command.equals(input) || input.startsWith(command + " ");
+    }
+
+    /** Returns the trimmed argument portion after a command keyword. */
+    private String getCommandArgument(String input, String command) {
+        return input.substring(command.length()).trim();
     }
 
     /** Parses a deadline command and preserves whether its date included a time. */

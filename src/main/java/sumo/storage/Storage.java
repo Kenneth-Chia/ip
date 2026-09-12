@@ -23,6 +23,15 @@ import sumo.ui.Ui;
  * Loads and saves Sumo tasks using a line-based data file.
  */
 public class Storage {
+    private static final int TYPE_INDEX = 0;
+    private static final int STATUS_INDEX = 1;
+    private static final int DESCRIPTION_INDEX = 2;
+    private static final int FIRST_DATE_INDEX = 3;
+    private static final int EVENT_END_DATE_INDEX = 4;
+    private static final String INCOMPLETE_STATUS = "0";
+    private static final String COMPLETE_STATUS = "1";
+    private static final String FIELD_SEPARATOR_REGEX = " \\| ";
+
     private final Path dataFile;
 
     /**
@@ -108,41 +117,54 @@ public class Storage {
             throw new IllegalArgumentException("the task record is blank.");
         }
 
-        String[] taskData = taskLine.split(" \\| ", -1);
-        TaskType taskType = TaskType.fromStorageCode(taskData[0]);
+        String[] taskData = taskLine.split(FIELD_SEPARATOR_REGEX, -1);
+        TaskType taskType = TaskType.fromStorageCode(taskData[TYPE_INDEX]);
+        validateTaskData(taskData, taskType);
+        Task task = createTask(taskData, taskType);
+        assert task.getTypeIcon().equals(taskType.getStorageCode())
+                : "Stored task type must match the reconstructed task.";
+        restoreCompletionStatus(task, taskData[STATUS_INDEX]);
+        return task;
+    }
 
+    /** Validates the fields required by one stored task record. */
+    private void validateTaskData(String[] taskData, TaskType taskType) {
         if (taskData.length != taskType.getStoredFieldCount()) {
             throw new IllegalArgumentException("Invalid number of fields in data file.");
         }
-        if (!taskData[1].equals("0") && !taskData[1].equals("1")) {
-            throw new IllegalArgumentException("Invalid completion status in data file: " + taskData[1]);
+        String completionStatus = taskData[STATUS_INDEX];
+        if (!completionStatus.equals(INCOMPLETE_STATUS) && !completionStatus.equals(COMPLETE_STATUS)) {
+            throw new IllegalArgumentException("Invalid completion status in data file: " + completionStatus);
         }
-        for (int i = 2; i < taskData.length; i++) {
+        for (int i = DESCRIPTION_INDEX; i < taskData.length; i++) {
             if (taskData[i].isBlank()) {
                 throw new IllegalArgumentException("Task fields in data file cannot be blank.");
             }
         }
+    }
 
-        Task task = switch (taskType) {
-            case TODO -> new Todo(taskData[2]);
+    /** Creates a task from validated stored fields. */
+    private Task createTask(String[] taskData, TaskType taskType) {
+        return switch (taskType) {
+            case TODO -> new Todo(taskData[DESCRIPTION_INDEX]);
             case DEADLINE -> {
-                ParsedDateTime deadline = parseStoredDateTime(taskData[3]);
-                yield new Deadline(taskData[2], deadline.value, deadline.hasTime);
+                ParsedDateTime deadline = parseStoredDateTime(taskData[FIRST_DATE_INDEX]);
+                yield new Deadline(taskData[DESCRIPTION_INDEX], deadline.value, deadline.hasTime);
             }
             case EVENT -> {
-                ParsedDateTime from = parseStoredDateTime(taskData[3]);
-                ParsedDateTime to = parseStoredDateTime(taskData[4]);
-                yield new Event(taskData[2], from.value, to.value,
+                ParsedDateTime from = parseStoredDateTime(taskData[FIRST_DATE_INDEX]);
+                ParsedDateTime to = parseStoredDateTime(taskData[EVENT_END_DATE_INDEX]);
+                yield new Event(taskData[DESCRIPTION_INDEX], from.value, to.value,
                         from.hasTime, to.hasTime);
             }
         };
-        assert task.getTypeIcon().equals(taskType.getStorageCode())
-                : "Stored task type must match the reconstructed task.";
+    }
 
-        if (taskData[1].equals("1")) {
+    /** Restores the completion state encoded in a stored task record. */
+    private void restoreCompletionStatus(Task task, String completionStatus) {
+        if (COMPLETE_STATUS.equals(completionStatus)) {
             task.markAsDone();
         }
-        return task;
     }
 
     /** Parses a canonical date or date-time stored in the data file. */

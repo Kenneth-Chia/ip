@@ -4,10 +4,14 @@ package sumo.task;
  * Represents a task entered by the user.
  */
 public class Task {
+    private static final String INCOMPLETE_STATUS = "0";
+    private static final String COMPLETE_STATUS = "1";
+    private static final String STORAGE_FIELD_SEPARATOR = " | ";
+
     /** Description supplied by the user. */
-    protected String description;
+    private final String description;
     /** Indicates whether the task has been completed. */
-    protected boolean isDone;
+    private boolean isDone;
 
     /**
      * Creates a new incomplete task with the given description.
@@ -27,7 +31,7 @@ public class Task {
      * @return "X" for a completed task or a space otherwise
      */
     public String getStatusIcon() {
-        return (isDone ? "X" : " ");
+        return isDone ? "X" : " ";
     }
 
     /**
@@ -49,7 +53,9 @@ public class Task {
      * @return the task type, completion status, and description
      */
     public String toDataString() {
-        return getTypeIcon() + " | " + (isDone ? "1" : "0") + " | " + getDescription();
+        String completionStatus = isDone ? COMPLETE_STATUS : INCOMPLETE_STATUS;
+        return getTypeIcon() + STORAGE_FIELD_SEPARATOR + completionStatus
+                + STORAGE_FIELD_SEPARATOR + getDescription();
     }
 
     /**

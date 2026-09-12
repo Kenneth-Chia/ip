@@ -50,7 +50,7 @@ public class Deadline extends Task {
      */
     @Override
     public String getTypeIcon() {
-        return "D";
+        return TaskType.DEADLINE.getStorageCode();
     }
 
     /**

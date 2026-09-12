@@ -2,6 +2,7 @@ package sumo.task;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 /**
  * A task that takes place between a specified start and end date or time.
@@ -46,6 +47,11 @@ public class Event extends Task {
     public Event(String description, LocalDateTime from, LocalDateTime to,
             boolean hasFromTime, boolean hasToTime) {
         super(description);
+        assert from != null && to != null : "An event must have both endpoints.";
+        assert hasFromTime || from.toLocalTime().equals(LocalTime.MIDNIGHT)
+                : "A date-only event start must be normalized to midnight.";
+        assert hasToTime || to.toLocalTime().equals(LocalTime.MIDNIGHT)
+                : "A date-only event end must be normalized to midnight.";
         this.from = from;
         this.to = to;
         this.hasFromTime = hasFromTime;

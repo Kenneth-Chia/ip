@@ -40,6 +40,7 @@ public class Storage {
      * @param dataFile path to the task data file
      */
     public Storage(Path dataFile) {
+        assert dataFile != null : "Storage requires a data-file path.";
         this.dataFile = dataFile;
     }
 
@@ -52,6 +53,7 @@ public class Storage {
      * @throws IOException if the data directory or existing file cannot be read
      */
     public List<Task> load(Ui ui) throws IOException {
+        assert ui != null : "Storage requires a UI for reporting invalid records.";
         List<Task> tasks = new ArrayList<>();
         Path dataDirectory = getDataDirectory();
         Files.createDirectories(dataDirectory);
@@ -82,6 +84,8 @@ public class Storage {
      * @throws IOException if the data directory or file cannot be written
      */
     public void save(List<Task> tasks) throws IOException {
+        assert tasks != null && tasks.stream().allMatch(task -> task != null)
+                : "Storage can save only a non-null list of non-null tasks.";
         Path dataDirectory = getDataDirectory();
         Files.createDirectories(dataDirectory);
         List<String> taskLines = tasks.stream()
@@ -117,6 +121,8 @@ public class Storage {
         TaskType taskType = TaskType.fromStorageCode(taskData[TYPE_INDEX]);
         validateTaskData(taskData, taskType);
         Task task = createTask(taskData, taskType);
+        assert task.getTypeIcon().equals(taskType.getStorageCode())
+                : "Stored task type must match the reconstructed task.";
         restoreCompletionStatus(task, taskData[STATUS_INDEX]);
         return task;
     }
@@ -163,6 +169,7 @@ public class Storage {
 
     /** Parses a canonical date or date-time stored in the data file. */
     private ParsedDateTime parseStoredDateTime(String text) {
+        assert text != null && !text.isBlank() : "Stored date/time fields must be non-blank.";
         try {
             if (text.contains("T")) {
                 return new ParsedDateTime(LocalDateTime.parse(text), true);

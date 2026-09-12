@@ -55,6 +55,11 @@ public class Parser {
         private final int taskIndex;
 
         private ParsedCommand(CommandType type, Task task, int taskIndex) {
+            assert type != null : "A parsed command must have a command type.";
+            assert (type == CommandType.ADD) == (task != null)
+                    : "Only add commands carry a task.";
+            assert type == CommandType.ADD ? taskIndex == -1 : taskIndex >= 0
+                    : "Parsed command index does not match its command type.";
             this.type = type;
             this.task = task;
             this.taskIndex = taskIndex;
@@ -161,6 +166,8 @@ public class Parser {
      * @throws SumoException if the command or any argument is invalid
      */
     public Command parse(String command, int taskCount) throws SumoException {
+        assert command != null : "The parser requires a command string.";
+        assert taskCount >= 0 : "The task count cannot be negative.";
         if ("bye".equals(command)) {
             return new ExitCommand();
         }
@@ -256,6 +263,9 @@ public class Parser {
 
     /** Converts and validates a user-facing one-based task number. */
     private ParsedCommand indexedCommand(CommandType type, String text, int taskCount) throws SumoException {
+        assert type != null && type != CommandType.ADD
+                : "An indexed command must update an existing task.";
+        assert taskCount >= 0 : "The task count cannot be negative.";
         if (text.isBlank()) {
             throw new SumoException("Please specify the number of the task to update.");
         }
@@ -264,6 +274,7 @@ public class Parser {
             if (index < 0 || index >= taskCount) {
                 throw new SumoException("That task number is not in your list.");
             }
+            assert index >= 0 && index < taskCount : "Validated task number must be in the task list.";
             return new ParsedCommand(type, null, index);
         } catch (NumberFormatException exception) {
             throw new SumoException("Task numbers must be whole numbers.");
@@ -271,6 +282,7 @@ public class Parser {
     }
 
     private ParsedCommand addCommand(Task task) {
+        assert task != null : "An add command must carry a task.";
         return new ParsedCommand(CommandType.ADD, task, -1);
     }
 

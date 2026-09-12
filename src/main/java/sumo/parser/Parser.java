@@ -202,14 +202,15 @@ public class Parser {
 
     /** Parses a deadline command and preserves whether its date included a time. */
     private Command parseDeadline(String taskText) throws SumoException {
-        String[] parts = splitCommand(taskText, " /by ", "Use: deadline <description> /by <date>.");
+        String[] parts = splitCommand(taskText, "Use: deadline <description> /by <date>.", " /by ");
         ParsedDateTime deadline = parseDateTime(parts[1], "Use: deadline <description> /by <date> [HHmm].");
         return addCommand(new Deadline(parts[0], deadline.value, deadline.includesTime));
     }
 
     /** Parses an event command and preserves each endpoint's input precision. */
     private Command parseEvent(String taskText) throws SumoException {
-        String[] parts = splitEvent(taskText);
+        String splitMessage = "Use: event <description> /from <start> /to <end>.";
+        String[] parts = splitCommand(taskText, splitMessage, " /from ", " /to ");
         String message = "Use: event <description> /from <date> [HHmm] /to <date> [HHmm].";
         ParsedDateTime from = parseDateTime(parts[1], message);
         ParsedDateTime to = parseDateTime(parts[2], message);
@@ -248,41 +249,27 @@ public class Parser {
         return new ParsedCommand(CommandType.ADD, task, -1);
     }
 
-    /** Splits a two-part command and validates both persisted fields. */
-    private String[] splitCommand(String text, String marker, String message) throws SumoException {
-        int markerIndex = text.indexOf(marker);
-        if (markerIndex < 0) {
-            throw new SumoException(message);
+    /** Splits a command by ordered markers and validates all resulting fields. */
+    private String[] splitCommand(String text, String message, String... markers) throws SumoException {
+        String[] parts = new String[markers.length + 1];
+        int partStart = 0;
+        for (int i = 0; i < markers.length; i++) {
+            int markerIndex = text.indexOf(markers[i], partStart);
+            if (markerIndex < 0) {
+                throw new SumoException(message);
+            }
+            parts[i] = text.substring(partStart, markerIndex).trim();
+            partStart = markerIndex + markers[i].length();
         }
-        String first = text.substring(0, markerIndex).trim();
-        String second = text.substring(markerIndex + marker.length()).trim();
-        ensureNotBlank(first, message);
-        ensureNotBlank(second, message);
-        ensurePersistable(first);
-        ensurePersistable(second);
-        return new String[] {first, second};
-    }
+        parts[parts.length - 1] = text.substring(partStart).trim();
 
-    /** Splits and validates an event description, start, and end. */
-    private String[] splitEvent(String text) throws SumoException {
-        String message = "Use: event <description> /from <start> /to <end>.";
-        String fromMarker = " /from ";
-        String toMarker = " /to ";
-        int fromIndex = text.indexOf(fromMarker);
-        int toIndex = text.indexOf(toMarker, fromIndex + fromMarker.length());
-        if (fromIndex < 0 || toIndex < 0) {
-            throw new SumoException(message);
+        for (String part : parts) {
+            ensureNotBlank(part, message);
         }
-        String description = text.substring(0, fromIndex).trim();
-        String from = text.substring(fromIndex + fromMarker.length(), toIndex).trim();
-        String to = text.substring(toIndex + toMarker.length()).trim();
-        ensureNotBlank(description, message);
-        ensureNotBlank(from, message);
-        ensureNotBlank(to, message);
-        ensurePersistable(description);
-        ensurePersistable(from);
-        ensurePersistable(to);
-        return new String[] {description, from, to};
+        for (String part : parts) {
+            ensurePersistable(part);
+        }
+        return parts;
     }
 
     /** Parses a date with an optional 24-hour time. */

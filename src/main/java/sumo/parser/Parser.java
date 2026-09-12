@@ -167,6 +167,11 @@ public class Parser {
         if ("list".equals(command)) {
             return new ListCommand();
         }
+        return parseCommandWithArgument(command, taskCount);
+    }
+
+    /** Parses commands that either query or mutate tasks through an argument. */
+    private Command parseCommandWithArgument(String command, int taskCount) throws SumoException {
         if (isCommand(command, "find")) {
             String keyword = getCommandArgument(command, "find");
             ensureNotBlank(keyword, "Please add a keyword after 'find'.");
@@ -175,6 +180,11 @@ public class Parser {
         if (isCommand(command, "on")) {
             return parseOn(getCommandArgument(command, "on"));
         }
+        return parseIndexedOrAddCommand(command, taskCount);
+    }
+
+    /** Parses commands that target an existing task or add a new task. */
+    private Command parseIndexedOrAddCommand(String command, int taskCount) throws SumoException {
         if (isCommand(command, "mark")) {
             return indexedCommand(CommandType.MARK, getCommandArgument(command, "mark"), taskCount);
         }
@@ -184,6 +194,11 @@ public class Parser {
         if (isCommand(command, "delete")) {
             return indexedCommand(CommandType.DELETE, getCommandArgument(command, "delete"), taskCount);
         }
+        return parseTaskCreationCommand(command);
+    }
+
+    /** Parses commands that create todo, deadline, or event tasks. */
+    private Command parseTaskCreationCommand(String command) throws SumoException {
         if (isCommand(command, "todo")) {
             String description = getCommandArgument(command, "todo");
             ensureNotBlank(description, "Please add a description after 'todo'.");

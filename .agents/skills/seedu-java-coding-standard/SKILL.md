@@ -21,7 +21,10 @@ topics the SE-EDU standard does not cover.
 
 - Use lowercase package names, PascalCase noun names for classes and enums, camelCase verb names
   for methods, camelCase variable names, and SCREAMING_SNAKE_CASE constant names. Keep names in
-  English; use boolean names that read as predicates and plural names for collections.
+  English; name every boolean field, local variable, parameter, and method to read as a predicate.
+  Prefer prefixes such as `is`, `has`, `can`, `should`, or `was` (for example, `isDone`,
+  `hasTime`, and `shouldMarkDone`) and avoid action-like names such as `markDone`. Use plural names
+  for collections.
 - Test methods may use `featureUnderTest_testScenario_expectedBehavior`.
 - Indent with four spaces and never tabs. Keep lines at or below 120 characters, preferably below
   110. Indent wrapped lines eight spaces beyond their parent; break after commas and before

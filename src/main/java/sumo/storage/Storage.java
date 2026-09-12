@@ -123,13 +123,13 @@ public class Storage {
             case TODO -> new Todo(taskData[2]);
             case DEADLINE -> {
                 ParsedDateTime deadline = parseStoredDateTime(taskData[3]);
-                yield new Deadline(taskData[2], deadline.value, deadline.includesTime);
+                yield new Deadline(taskData[2], deadline.value, deadline.hasTime);
             }
             case EVENT -> {
                 ParsedDateTime from = parseStoredDateTime(taskData[3]);
                 ParsedDateTime to = parseStoredDateTime(taskData[4]);
                 yield new Event(taskData[2], from.value, to.value,
-                        from.includesTime, to.includesTime);
+                        from.hasTime, to.hasTime);
             }
         };
 
@@ -154,11 +154,11 @@ public class Storage {
     /** Holds a stored date/time and whether the record includes a time. */
     private static final class ParsedDateTime {
         private final LocalDateTime value;
-        private final boolean includesTime;
+        private final boolean hasTime;
 
-        private ParsedDateTime(LocalDateTime value, boolean includesTime) {
+        private ParsedDateTime(LocalDateTime value, boolean hasTime) {
             this.value = value;
-            this.includesTime = includesTime;
+            this.hasTime = hasTime;
         }
     }
 }

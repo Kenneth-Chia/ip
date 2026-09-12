@@ -109,18 +109,18 @@ public class Parser {
         }
 
         /** Updates a task's status and restores it if saving fails. */
-        private void updateTaskStatus(TaskList tasks, Ui ui, Storage storage, boolean markDone)
+        private void updateTaskStatus(TaskList tasks, Ui ui, Storage storage, boolean shouldMarkDone)
                 throws IOException {
             Task selectedTask = tasks.get(taskIndex);
             boolean wasDone = selectedTask.isDone();
-            tasks.setDone(taskIndex, markDone);
+            tasks.setDone(taskIndex, shouldMarkDone);
             try {
                 storage.save(tasks.getTasks());
             } catch (IOException exception) {
                 tasks.setDone(taskIndex, wasDone);
                 throw exception;
             }
-            if (markDone) {
+            if (shouldMarkDone) {
                 ui.showTaskMarked(selectedTask);
             } else {
                 ui.showTaskUnmarked(selectedTask);
@@ -204,7 +204,7 @@ public class Parser {
     private Command parseDeadline(String taskText) throws SumoException {
         String[] parts = splitCommand(taskText, "Use: deadline <description> /by <date>.", " /by ");
         ParsedDateTime deadline = parseDateTime(parts[1], "Use: deadline <description> /by <date> [HHmm].");
-        return addCommand(new Deadline(parts[0], deadline.value, deadline.includesTime));
+        return addCommand(new Deadline(parts[0], deadline.value, deadline.hasTime));
     }
 
     /** Parses an event command and preserves each endpoint's input precision. */
@@ -214,7 +214,7 @@ public class Parser {
         String message = "Use: event <description> /from <date> [HHmm] /to <date> [HHmm].";
         ParsedDateTime from = parseDateTime(parts[1], message);
         ParsedDateTime to = parseDateTime(parts[2], message);
-        return addCommand(new Event(parts[0], from.value, to.value, from.includesTime, to.includesTime));
+        return addCommand(new Event(parts[0], from.value, to.value, from.hasTime, to.hasTime));
     }
 
     /** Parses a date-filter command using either supported date format. */
@@ -312,11 +312,11 @@ public class Parser {
 
     private static class ParsedDateTime {
         private final LocalDateTime value;
-        private final boolean includesTime;
+        private final boolean hasTime;
 
-        private ParsedDateTime(LocalDateTime value, boolean includesTime) {
+        private ParsedDateTime(LocalDateTime value, boolean hasTime) {
             this.value = value;
-            this.includesTime = includesTime;
+            this.hasTime = hasTime;
         }
     }
 }

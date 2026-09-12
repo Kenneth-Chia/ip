@@ -9,8 +9,8 @@ import java.time.LocalDateTime;
 public class Event extends Task {
     private final LocalDateTime from;
     private final LocalDateTime to;
-    private final boolean fromIncludesTime;
-    private final boolean toIncludesTime;
+    private final boolean hasFromTime;
+    private final boolean hasToTime;
 
     /**
      * Creates a new incomplete event.
@@ -40,16 +40,16 @@ public class Event extends Task {
      * @param description the event text
      * @param from the event start date and time
      * @param to the event end date and time
-     * @param fromIncludesTime whether the start input included a time
-     * @param toIncludesTime whether the end input included a time
+     * @param hasFromTime whether the start input included a time
+     * @param hasToTime whether the end input included a time
      */
     public Event(String description, LocalDateTime from, LocalDateTime to,
-            boolean fromIncludesTime, boolean toIncludesTime) {
+            boolean hasFromTime, boolean hasToTime) {
         super(description);
         this.from = from;
         this.to = to;
-        this.fromIncludesTime = fromIncludesTime;
-        this.toIncludesTime = toIncludesTime;
+        this.hasFromTime = hasFromTime;
+        this.hasToTime = hasToTime;
     }
 
     /**
@@ -87,8 +87,8 @@ public class Event extends Task {
      */
     @Override
     public String toDataString() {
-        String storedFrom = fromIncludesTime ? from.toString() : from.toLocalDate().toString();
-        String storedTo = toIncludesTime ? to.toString() : to.toLocalDate().toString();
+        String storedFrom = hasFromTime ? from.toString() : from.toLocalDate().toString();
+        String storedTo = hasToTime ? to.toString() : to.toLocalDate().toString();
         return super.toDataString() + " | " + storedFrom + " | " + storedTo;
     }
 
@@ -100,7 +100,7 @@ public class Event extends Task {
     @Override
     public String toString() {
         return "[" + getTypeIcon() + "][" + getStatusIcon() + "] "
-                + getDescription() + " (from: " + DateTimeDisplay.format(from, fromIncludesTime)
-                + " to: " + DateTimeDisplay.format(to, toIncludesTime) + ")";
+                + getDescription() + " (from: " + DateTimeDisplay.format(from, hasFromTime)
+                + " to: " + DateTimeDisplay.format(to, hasToTime) + ")";
     }
 }

@@ -5,9 +5,9 @@ package sumo.task;
  */
 public class Task {
     /** Description supplied by the user. */
-    protected String description;
+    private final String description;
     /** Indicates whether the task has been completed. */
-    protected boolean isDone;
+    private boolean isDone;
 
     /**
      * Creates a new incomplete task with the given description.

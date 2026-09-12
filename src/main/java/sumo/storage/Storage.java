@@ -15,6 +15,7 @@ import java.util.List;
 import sumo.task.Deadline;
 import sumo.task.Event;
 import sumo.task.Task;
+import sumo.task.TaskType;
 import sumo.task.Todo;
 import sumo.ui.Ui;
 
@@ -104,22 +105,9 @@ public class Storage {
         }
 
         String[] taskData = taskLine.split(" \\| ", -1);
-        int expectedFieldCount;
-        switch (taskData[0]) {
-            case "T":
-                expectedFieldCount = 3;
-                break;
-            case "D":
-                expectedFieldCount = 4;
-                break;
-            case "E":
-                expectedFieldCount = 5;
-                break;
-            default:
-                throw new IllegalArgumentException("Unknown task type in data file: " + taskData[0]);
-        }
+        TaskType taskType = TaskType.fromStorageCode(taskData[0]);
 
-        if (taskData.length != expectedFieldCount) {
+        if (taskData.length != taskType.getStoredFieldCount()) {
             throw new IllegalArgumentException("Invalid number of fields in data file.");
         }
         if (!taskData[1].equals("0") && !taskData[1].equals("1")) {
@@ -131,24 +119,19 @@ public class Storage {
             }
         }
 
-        Task task;
-        switch (taskData[0]) {
-            case "T":
-                task = new Todo(taskData[2]);
-                break;
-            case "D":
+        Task task = switch (taskType) {
+            case TODO -> new Todo(taskData[2]);
+            case DEADLINE -> {
                 ParsedDateTime deadline = parseStoredDateTime(taskData[3]);
-                task = new Deadline(taskData[2], deadline.value, deadline.includesTime);
-                break;
-            case "E":
+                yield new Deadline(taskData[2], deadline.value, deadline.includesTime);
+            }
+            case EVENT -> {
                 ParsedDateTime from = parseStoredDateTime(taskData[3]);
                 ParsedDateTime to = parseStoredDateTime(taskData[4]);
-                task = new Event(taskData[2], from.value, to.value,
+                yield new Event(taskData[2], from.value, to.value,
                         from.includesTime, to.includesTime);
-                break;
-            default:
-                throw new IllegalArgumentException("Unknown task type in data file: " + taskData[0]);
-        }
+            }
+        };
 
         if (taskData[1].equals("1")) {
             task.markAsDone();

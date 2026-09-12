@@ -15,6 +15,8 @@ public class Task {
      * @param description the task text
      */
     public Task(String description) {
+        assert description != null && !description.isBlank()
+                && !description.contains(" | ") : "Task descriptions must be persistable.";
         this.description = description;
         this.isDone = false;
     }

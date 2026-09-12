@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
  */
 public class Deadline extends Task {
     private final LocalDateTime by;
-    private final boolean includesTime;
+    private final boolean hasTime;
 
     /**
      * Creates a new incomplete deadline.
@@ -35,12 +35,12 @@ public class Deadline extends Task {
      *
      * @param description the task text
      * @param by the deadline date and time
-     * @param includesTime whether the user supplied a time
+     * @param hasTime whether the user supplied a time
      */
-    public Deadline(String description, LocalDateTime by, boolean includesTime) {
+    public Deadline(String description, LocalDateTime by, boolean hasTime) {
         super(description);
         this.by = by;
-        this.includesTime = includesTime;
+        this.hasTime = hasTime;
     }
 
     /**
@@ -70,7 +70,7 @@ public class Deadline extends Task {
     @Override
     public String toDataString() {
         return super.toDataString() + " | "
-                + (includesTime ? by.toString() : by.toLocalDate().toString());
+                + (hasTime ? by.toString() : by.toLocalDate().toString());
     }
 
     /**
@@ -81,6 +81,6 @@ public class Deadline extends Task {
     @Override
     public String toString() {
         return "[" + getTypeIcon() + "][" + getStatusIcon() + "] "
-                + getDescription() + " (by: " + DateTimeDisplay.format(by, includesTime) + ")";
+                + getDescription() + " (by: " + DateTimeDisplay.format(by, hasTime) + ")";
     }
 }

@@ -21,10 +21,10 @@ public final class DateTimeDisplay {
      * Formats a date and optionally its time.
      *
      * @param value the value to format
-     * @param includesTime whether the time should be shown
+     * @param hasTime whether the value includes a time
      * @return the formatted value
      */
-    public static String format(LocalDateTime value, boolean includesTime) {
-        return value.format(includesTime ? DATE_TIME_FORMATTER : DATE_FORMATTER);
+    public static String format(LocalDateTime value, boolean hasTime) {
+        return value.format(hasTime ? DATE_TIME_FORMATTER : DATE_FORMATTER);
     }
 }

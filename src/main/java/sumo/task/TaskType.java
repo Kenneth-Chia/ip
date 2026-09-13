@@ -1,5 +1,7 @@
 package sumo.task;
 
+import java.util.Arrays;
+
 /** Represents the finite set of task types supported by Sumo. */
 public enum TaskType {
     TODO("T", 3),
@@ -32,11 +34,10 @@ public enum TaskType {
      * @throws IllegalArgumentException if the code is not recognised
      */
     public static TaskType fromStorageCode(String storageCode) {
-        for (TaskType taskType : values()) {
-            if (taskType.storageCode.equals(storageCode)) {
-                return taskType;
-            }
-        }
-        throw new IllegalArgumentException("Unknown task type in data file: " + storageCode);
+        return Arrays.stream(values())
+                .filter(taskType -> taskType.storageCode.equals(storageCode))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "Unknown task type in data file: " + storageCode));
     }
 }

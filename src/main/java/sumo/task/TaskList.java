@@ -3,6 +3,7 @@ package sumo.task;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Owns Sumo's ordered collection of tasks and its task-list operations.
@@ -109,13 +110,9 @@ public class TaskList {
      */
     public List<Task> findOn(LocalDate date) {
         assert date != null : "A date is required when filtering tasks.";
-        List<Task> matchingTasks = new ArrayList<>();
-        for (Task task : tasks) {
-            if (occursOn(task, date)) {
-                matchingTasks.add(task);
-            }
-        }
-        return matchingTasks;
+        return tasks.stream()
+                .filter(task -> occursOn(task, date))
+                .collect(Collectors.toCollection(ArrayList::new));
     }
 
     /**
@@ -126,13 +123,9 @@ public class TaskList {
      */
     public List<Task> find(String keyword) {
         assert keyword != null : "A keyword is required when searching tasks.";
-        List<Task> matchingTasks = new ArrayList<>();
-        for (Task task : tasks) {
-            if (task.getDescription().contains(keyword)) {
-                matchingTasks.add(task);
-            }
-        }
-        return matchingTasks;
+        return tasks.stream()
+                .filter(task -> task.getDescription().contains(keyword))
+                .collect(Collectors.toCollection(ArrayList::new));
     }
 
     /** Determines whether a deadline or event covers the requested date. */

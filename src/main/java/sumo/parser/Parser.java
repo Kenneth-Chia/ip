@@ -14,6 +14,7 @@ import sumo.command.ExitCommand;
 import sumo.command.FindCommand;
 import sumo.command.ListCommand;
 import sumo.command.OnCommand;
+import sumo.command.SortCommand;
 import sumo.exception.SumoException;
 import sumo.storage.Storage;
 import sumo.task.Deadline;
@@ -174,6 +175,9 @@ public class Parser {
         if ("list".equals(command)) {
             return new ListCommand();
         }
+        if ("sort".equals(command)) {
+            return new SortCommand();
+        }
         return parseCommandWithArgument(command, taskCount);
     }
 
@@ -219,7 +223,7 @@ public class Parser {
             return parseEvent(getCommandArgument(command, "event"));
         }
         throw new SumoException("I do not recognise that command. "
-                + "Try todo, deadline, event, list, find, on, mark, unmark, or delete.");
+                + "Try todo, deadline, event, list, sort, find, on, mark, unmark, or delete.");
     }
 
     /** Returns whether input is the command itself or starts with its argument separator. */

@@ -143,10 +143,42 @@ public class Ui {
         showNumberedTasks(tasks);
     }
 
+    /** Shows all tasks in the temporary chronological view. */
+    public void showSortedTaskList(List<Task> tasks) {
+        output.accept(" Here are your tasks sorted chronologically (ascending):");
+        showSortedTaskGroups(tasks);
+        output.accept(" Sorted view only; the normal task order is unchanged.");
+    }
+
+    /** Shows the empty-state message for a chronological view. */
+    public void showNoTasksToSort() {
+        output.accept(" No tasks to be sorted.");
+    }
+
     /** Shows tasks with one-based positions in their supplied order. */
     private void showNumberedTasks(List<Task> tasks) {
         for (int i = 0; i < tasks.size(); i++) {
             output.accept(" " + (i + 1) + "." + tasks.get(i));
+        }
+    }
+
+    /** Shows sorted tasks grouped by completion status while preserving display numbering. */
+    private void showSortedTaskGroups(List<Task> tasks) {
+        boolean hasShownIncompleteHeading = false;
+        boolean hasShownCompletedHeading = false;
+        int taskNumber = 1;
+        for (Task task : tasks) {
+            if (task.isDone()) {
+                if (!hasShownCompletedHeading) {
+                    output.accept(" Completed tasks:");
+                    hasShownCompletedHeading = true;
+                }
+            } else if (!hasShownIncompleteHeading) {
+                output.accept(" Incomplete tasks:");
+                hasShownIncompleteHeading = true;
+            }
+            output.accept(" " + taskNumber + "." + task);
+            taskNumber++;
         }
     }
 

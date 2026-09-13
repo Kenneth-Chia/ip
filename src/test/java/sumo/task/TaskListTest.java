@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
@@ -120,5 +121,37 @@ public class TaskListTest {
         TaskList taskList = new TaskList(List.of(new Todo("read book")));
 
         assertTrue(taskList.find("Book").isEmpty());
+    }
+
+    @Test
+    public void getChronologicallySortedTasks_mixedTasks_sortedByStatusAndDates() {
+        Todo firstTodo = new Todo("first todo");
+        Event laterEvent = new Event("later event", LocalDateTime.of(2026, 2, 1, 5, 0),
+                LocalDateTime.of(2026, 2, 10, 17, 0));
+        Deadline deadline = new Deadline("deadline", LocalDate.of(2026, 2, 9));
+        Event earlierEvent = new Event("earlier event", LocalDateTime.of(2026, 2, 3, 9, 0),
+                LocalDateTime.of(2026, 2, 10, 17, 0));
+        Todo secondTodo = new Todo("second todo");
+        Deadline completedDeadline = new Deadline("completed deadline", LocalDate.of(2026, 1, 1));
+        completedDeadline.markAsDone();
+        TaskList taskList = new TaskList(List.of(firstTodo, laterEvent, deadline, earlierEvent,
+                secondTodo, completedDeadline));
+
+        assertEquals(List.of(deadline, laterEvent, earlierEvent, firstTodo, secondTodo, completedDeadline),
+                taskList.getChronologicallySortedTasks());
+        assertEquals(List.of(firstTodo, laterEvent, deadline, earlierEvent, secondTodo, completedDeadline),
+                taskList.getTasks());
+    }
+
+    @Test
+    public void getChronologicallySortedTasks_equalPrimaryValues_preservesExistingOrder() {
+        Event firstEvent = new Event("first event", LocalDate.of(2026, 2, 1),
+                LocalDate.of(2026, 2, 10));
+        Deadline secondTask = new Deadline("second task", LocalDate.of(2026, 2, 10));
+        Event thirdEvent = new Event("third event", LocalDate.of(2026, 2, 1),
+                LocalDate.of(2026, 2, 10));
+        TaskList taskList = new TaskList(List.of(firstEvent, secondTask, thirdEvent));
+
+        assertEquals(List.of(firstEvent, secondTask, thirdEvent), taskList.getChronologicallySortedTasks());
     }
 }

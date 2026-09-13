@@ -9,7 +9,7 @@ The JavaFX-specific manual checks are documented separately in [gui-test-plan.md
 - Working directory: repository root
 - Test runner command: `java test/UiTestRunner.java`
 - Java version: 25
-- Setup/compile command: `javac -d out src/main/java/sumo/Sumo.java src/main/java/sumo/command/Command.java src/main/java/sumo/command/ExitCommand.java src/main/java/sumo/command/FindCommand.java src/main/java/sumo/command/ListCommand.java src/main/java/sumo/command/OnCommand.java src/main/java/sumo/exception/SumoException.java src/main/java/sumo/parser/Parser.java src/main/java/sumo/storage/Storage.java src/main/java/sumo/task/DateTimeDisplay.java src/main/java/sumo/task/Deadline.java src/main/java/sumo/task/Event.java src/main/java/sumo/task/Task.java src/main/java/sumo/task/TaskList.java src/main/java/sumo/task/TaskType.java src/main/java/sumo/task/Todo.java src/main/java/sumo/ui/Ui.java`
+- Setup/compile command: `javac -d out src/main/java/sumo/Sumo.java src/main/java/sumo/command/Command.java src/main/java/sumo/command/ExitCommand.java src/main/java/sumo/command/FindCommand.java src/main/java/sumo/command/ListCommand.java src/main/java/sumo/command/OnCommand.java src/main/java/sumo/command/SortCommand.java src/main/java/sumo/exception/SumoException.java src/main/java/sumo/parser/Parser.java src/main/java/sumo/storage/Storage.java src/main/java/sumo/task/DateTimeDisplay.java src/main/java/sumo/task/Deadline.java src/main/java/sumo/task/Event.java src/main/java/sumo/task/Task.java src/main/java/sumo/task/TaskList.java src/main/java/sumo/task/TaskType.java src/main/java/sumo/task/Todo.java src/main/java/sumo/ui/Ui.java`
 - Program launch command: `java -cp out sumo.Sumo`
 - Output comparison: exact, after normalizing Windows `CRLF` line endings to `LF`; each expected block contains only the response produced after its listed input
 - Test isolation: before each test case, delete `data/sumo.txt` if it exists, then launch a fresh program process unless the case explicitly requires multiple continuous sessions
@@ -128,7 +128,7 @@ The runner parses the numbered `Command/input` entries and their following fence
 
      ```text
      ____________________________________________________________
-      I could not complete that command: I do not recognise that command. Try todo, deadline, event, list, find, on, mark, unmark, or delete.
+      I could not complete that command: I do not recognise that command. Try todo, deadline, event, list, sort, find, on, mark, unmark, or delete.
      ____________________________________________________________
      ```
 
@@ -705,6 +705,111 @@ The runner parses the numbered `Command/input` entries and their following fence
      ```text
      ____________________________________________________________
       I could not complete that command: Please add a keyword after 'find'.
+     ____________________________________________________________
+     ```
+
+  8. Command/input: `bye`
+
+     Expected output:
+
+     ```text
+     ____________________________________________________________
+     Bye. Hope to see you again soon!
+     ____________________________________________________________
+     ```
+
+- Notes: Run all eight inputs in one continuous process so the task state is preserved.
+
+### UI-011 — Display a temporary chronological sort
+
+- Aim: Verify that `sort` displays the full task list in ascending chronological order, groups
+  incomplete and completed tasks, leaves undated todos last, preserves the normal order, and
+  rejects arguments.
+- Inputs, commands, and expected output:
+
+  1. Command/input: `todo buy groceries`
+
+     Expected output:
+
+     ```text
+     ____________________________________________________________
+      Got it. I've added this task:
+        [T][ ] buy groceries
+      Now you have 1 tasks in the list.
+     ____________________________________________________________
+     ```
+
+  2. Command/input: `deadline submit report /by 2026-02-09`
+
+     Expected output:
+
+     ```text
+     ____________________________________________________________
+      Got it. I've added this task:
+        [D][ ] submit report (by: Feb 09 2026)
+      Now you have 2 tasks in the list.
+     ____________________________________________________________
+     ```
+
+  3. Command/input: `event meeting /from 2026-02-03 /to 2026-02-10`
+
+     Expected output:
+
+     ```text
+     ____________________________________________________________
+      Got it. I've added this task:
+        [E][ ] meeting (from: Feb 03 2026 to: Feb 10 2026)
+      Now you have 3 tasks in the list.
+     ____________________________________________________________
+     ```
+
+  4. Command/input: `mark 2`
+
+     Expected output:
+
+     ```text
+     ____________________________________________________________
+      Nice! I've marked this task as done:
+        [D][X] submit report (by: Feb 09 2026)
+     ____________________________________________________________
+     ```
+
+  5. Command/input: `sort`
+
+     Expected output:
+
+     ```text
+     ____________________________________________________________
+      Here are your tasks sorted chronologically (ascending):
+      Incomplete tasks:
+      1.[E][ ] meeting (from: Feb 03 2026 to: Feb 10 2026)
+      2.[T][ ] buy groceries
+      Completed tasks:
+      3.[D][X] submit report (by: Feb 09 2026)
+      Sorted view only; the normal task order is unchanged.
+     ____________________________________________________________
+     ```
+
+  6. Command/input: `list`
+
+     Expected output:
+
+     ```text
+     ____________________________________________________________
+      Here are the tasks in your list:
+      1.[T][ ] buy groceries
+      2.[D][X] submit report (by: Feb 09 2026)
+      3.[E][ ] meeting (from: Feb 03 2026 to: Feb 10 2026)
+     ____________________________________________________________
+     ```
+
+  7. Command/input: `sort descending`
+
+     Expected output:
+
+     ```text
+     ____________________________________________________________
+      I could not complete that command: I do not recognise that command. Try todo, deadline, event, list, sort, find, on, mark, unmark, or delete.
      ____________________________________________________________
      ```
 

@@ -22,6 +22,8 @@ public class TaskList {
      * @param tasks tasks loaded from storage
      */
     public TaskList(List<Task> tasks) {
+        assert tasks != null && tasks.stream().allMatch(task -> task != null)
+                : "A task list must contain only non-null tasks.";
         this.tasks = new ArrayList<>(tasks);
     }
 
@@ -59,6 +61,7 @@ public class TaskList {
      * @param task task to add
      */
     public void add(Task task) {
+        assert task != null : "A task list cannot contain a null task.";
         tasks.add(task);
     }
 
@@ -79,6 +82,8 @@ public class TaskList {
      * @param task task to insert
      */
     public void insert(int index, Task task) {
+        assert index >= 0 && index <= tasks.size() : "Rollback index must be within the list bounds.";
+        assert task != null : "A task list cannot contain a null task.";
         tasks.add(index, task);
     }
 
@@ -89,6 +94,7 @@ public class TaskList {
      * @param isDone whether the task should be marked complete
      */
     public void setDone(int index, boolean isDone) {
+        assert index >= 0 && index < tasks.size() : "Task status updates require a valid task index.";
         if (isDone) {
             tasks.get(index).markAsDone();
         } else {
@@ -103,6 +109,7 @@ public class TaskList {
      * @return matching tasks in their original order
      */
     public List<Task> findOn(LocalDate date) {
+        assert date != null : "A date is required when filtering tasks.";
         return tasks.stream()
                 .filter(task -> occursOn(task, date))
                 .collect(Collectors.toCollection(ArrayList::new));
@@ -115,6 +122,7 @@ public class TaskList {
      * @return matching tasks in their original order
      */
     public List<Task> find(String keyword) {
+        assert keyword != null : "A keyword is required when searching tasks.";
         return tasks.stream()
                 .filter(task -> task.getDescription().contains(keyword))
                 .collect(Collectors.toCollection(ArrayList::new));

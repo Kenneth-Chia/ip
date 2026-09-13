@@ -119,9 +119,7 @@ public class Ui {
      */
     public void showTaskList(List<Task> tasks) {
         output.accept(" Here are the tasks in your list:");
-        for (int i = 0; i < tasks.size(); i++) {
-            output.accept(" " + (i + 1) + "." + tasks.get(i));
-        }
+        showNumberedTasks(tasks);
     }
 
     /**
@@ -131,9 +129,7 @@ public class Ui {
      */
     public void showMatchingTasks(List<Task> tasks) {
         output.accept(" Here are the matching tasks in your list:");
-        for (int i = 0; i < tasks.size(); i++) {
-            output.accept(" " + (i + 1) + "." + tasks.get(i));
-        }
+        showNumberedTasks(tasks);
     }
 
     /**
@@ -144,6 +140,11 @@ public class Ui {
      */
     public void showTasksOnDate(LocalDateTime date, List<Task> tasks) {
         output.accept(" Here are the tasks on " + DateTimeDisplay.format(date, false) + ":");
+        showNumberedTasks(tasks);
+    }
+
+    /** Shows tasks with one-based positions in their supplied order. */
+    private void showNumberedTasks(List<Task> tasks) {
         for (int i = 0; i < tasks.size(); i++) {
             output.accept(" " + (i + 1) + "." + tasks.get(i));
         }

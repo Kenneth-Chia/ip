@@ -2,6 +2,7 @@ package sumo.task;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 /**
  * A task that should be completed by a specified date or time.
@@ -39,6 +40,9 @@ public class Deadline extends Task {
      */
     public Deadline(String description, LocalDateTime by, boolean hasTime) {
         super(description);
+        assert by != null : "A deadline must have a date or time.";
+        assert hasTime || by.toLocalTime().equals(LocalTime.MIDNIGHT)
+                : "A date-only deadline must be normalized to midnight.";
         this.by = by;
         this.hasTime = hasTime;
     }

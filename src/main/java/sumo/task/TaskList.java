@@ -1,6 +1,7 @@
 package sumo.task;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -43,6 +44,17 @@ public class TaskList {
      */
     public List<Task> getTasks() {
         return List.copyOf(tasks);
+    }
+
+    /**
+     * Returns a stable chronological copy of the tasks, with incomplete tasks before completed tasks.
+     *
+     * @return a read-only copy of the tasks in chronological order
+     */
+    public List<Task> getChronologicallySortedTasks() {
+        List<Task> sortedTasks = new ArrayList<>(tasks);
+        sortedTasks.sort(TaskList::compareChronologically);
+        return List.copyOf(sortedTasks);
     }
 
     /**
@@ -139,5 +151,42 @@ public class TaskList {
             return !date.isBefore(from) && !date.isAfter(to);
         }
         return false;
+    }
+
+    /** Compares tasks according to the temporary chronological-view rules. */
+    private static int compareChronologically(Task first, Task second) {
+        int completionOrder = Boolean.compare(first.isDone(), second.isDone());
+        if (completionOrder != 0) {
+            return completionOrder;
+        }
+
+        boolean isFirstUndated = !(first instanceof Deadline) && !(first instanceof Event);
+        boolean isSecondUndated = !(second instanceof Deadline) && !(second instanceof Event);
+        if (isFirstUndated || isSecondUndated) {
+            return Boolean.compare(isFirstUndated, isSecondUndated);
+        }
+
+        LocalDateTime firstDate = getSortDate(first);
+        LocalDateTime secondDate = getSortDate(second);
+        int dateOrder = firstDate.compareTo(secondDate);
+        if (dateOrder != 0) {
+            return dateOrder;
+        }
+
+        if (first instanceof Event firstEvent && second instanceof Event secondEvent) {
+            return firstEvent.getFrom().compareTo(secondEvent.getFrom());
+        }
+        return 0;
+    }
+
+    /** Returns the primary chronological value for a dated task. */
+    private static LocalDateTime getSortDate(Task task) {
+        if (task instanceof Deadline deadline) {
+            return deadline.getBy();
+        }
+        if (task instanceof Event event) {
+            return event.getTo();
+        }
+        throw new IllegalArgumentException("Only dated tasks can be chronologically sorted.");
     }
 }

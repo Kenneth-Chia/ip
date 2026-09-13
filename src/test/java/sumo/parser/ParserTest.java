@@ -12,6 +12,7 @@ import sumo.command.ExitCommand;
 import sumo.command.FindCommand;
 import sumo.command.ListCommand;
 import sumo.command.OnCommand;
+import sumo.command.SortCommand;
 import sumo.exception.SumoException;
 import sumo.parser.Parser.CommandType;
 import sumo.parser.Parser.ParsedCommand;
@@ -28,6 +29,7 @@ public class ParserTest {
     public void parse_commandsWithoutArguments_correctCommandTypesReturned() throws SumoException {
         assertInstanceOf(ExitCommand.class, parser.parse("bye", 0));
         assertInstanceOf(ListCommand.class, parser.parse("list", 0));
+        assertInstanceOf(SortCommand.class, parser.parse("sort", 0));
         assertInstanceOf(FindCommand.class, parser.parse("find book", 0));
     }
 
@@ -101,6 +103,7 @@ public class ParserTest {
         assertThrows(SumoException.class, () -> parser.parse("mark", 1));
         assertThrows(SumoException.class, () -> parser.parse("on", 0));
         assertThrows(SumoException.class, () -> parser.parse("find", 0));
+        assertThrows(SumoException.class, () -> parser.parse("sort extra", 0));
     }
 
     /** Verifies rejection of invalid dates and times. */

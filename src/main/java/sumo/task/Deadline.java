@@ -14,8 +14,8 @@ public class Deadline extends Task {
     /**
      * Creates a new incomplete deadline.
      *
-     * @param description the task text
-     * @param by the date and time by which the task should be completed
+     * @param description the task text.
+     * @param by the date and time by which the task should be completed.
      */
     public Deadline(String description, LocalDateTime by) {
         this(description, by, true);
@@ -24,8 +24,8 @@ public class Deadline extends Task {
     /**
      * Creates a new incomplete deadline for a date without a specified time.
      *
-     * @param description the task text
-     * @param by the date by which the task should be completed
+     * @param description the task text.
+     * @param by the date by which the task should be completed.
      */
     public Deadline(String description, LocalDate by) {
         this(description, by.atStartOfDay(), false);
@@ -34,9 +34,9 @@ public class Deadline extends Task {
     /**
      * Creates a deadline while retaining whether its input included a time.
      *
-     * @param description the task text
-     * @param by the deadline date and time
-     * @param hasTime whether the user supplied a time
+     * @param description the task text.
+     * @param by the deadline date and time.
+     * @param hasTime whether the user supplied a time.
      */
     public Deadline(String description, LocalDateTime by, boolean hasTime) {
         super(description);
@@ -50,7 +50,7 @@ public class Deadline extends Task {
     /**
      * Returns the deadline type icon.
      *
-     * @return the deadline type icon
+     * @return the deadline type icon.
      */
     @Override
     public String getTypeIcon() {
@@ -60,16 +60,21 @@ public class Deadline extends Task {
     /**
      * Returns the date or time by which this task should be completed.
      *
-     * @return the deadline date or time
+     * @return the deadline date or time.
      */
     public LocalDateTime getBy() {
         return by;
     }
 
+    @Override
+    public boolean hasSameDetails(Task other) {
+        return super.hasSameDetails(other) && by.equals(((Deadline) other).by);
+    }
+
     /**
      * Returns this deadline in the line-based format used for persistent storage.
      *
-     * @return the task type, completion status, description, and deadline
+     * @return the task type, completion status, description, and deadline.
      */
     @Override
     public String toDataString() {
@@ -80,7 +85,7 @@ public class Deadline extends Task {
     /**
      * Returns this deadline in the format used by Sumo's task list.
      *
-     * @return the formatted deadline
+     * @return the formatted deadline.
      */
     @Override
     public String toString() {

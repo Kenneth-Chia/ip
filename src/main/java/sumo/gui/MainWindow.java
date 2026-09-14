@@ -39,19 +39,22 @@ public class MainWindow extends AnchorPane {
     /**
      * Supplies the Sumo instance that handles commands and displays its greeting.
      *
-     * @param sumo Sumo application to use for this window
+     * @param sumo Sumo application to use for this window.
      */
     public void setSumo(Sumo sumo) {
         this.sumo = sumo;
         dialogContainer.getChildren().add(
                 DialogBox.getSumoDialog("Hello! I'm Sumo.\nWhat can I do for you?", sumoImage));
+        if (!sumo.getStartupMessage().isEmpty()) {
+            dialogContainer.getChildren().add(DialogBox.getSumoDialog(sumo.getStartupMessage(), sumoImage));
+        }
     }
 
     /** Displays the user's command followed by Sumo's response. */
     @FXML
     private void handleUserInput() {
-        String input = userInput.getText().trim();
-        if (input.isEmpty() || sumo == null || sumo.isExit()) {
+        String input = userInput.getText();
+        if (input.isBlank() || sumo == null || sumo.isExit()) {
             return;
         }
 

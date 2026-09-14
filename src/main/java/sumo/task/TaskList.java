@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import sumo.exception.SumoException;
+
 /**
  * Owns Sumo's ordered collection of tasks and its task-list operations.
  */
@@ -20,7 +22,7 @@ public class TaskList {
     /**
      * Creates a task list containing the loaded tasks.
      *
-     * @param tasks tasks loaded from storage
+     * @param tasks tasks loaded from storage.
      */
     public TaskList(List<Task> tasks) {
         assert tasks != null && tasks.stream().allMatch(task -> task != null)
@@ -31,7 +33,7 @@ public class TaskList {
     /**
      * Returns the number of tasks in the list.
      *
-     * @return the number of tasks in the list
+     * @return the number of tasks in the list.
      */
     public int size() {
         return tasks.size();
@@ -40,7 +42,7 @@ public class TaskList {
     /**
      * Returns a read-only snapshot of the tasks in their current order.
      *
-     * @return a read-only snapshot of the tasks in their current order
+     * @return a read-only snapshot of the tasks in their current order.
      */
     public List<Task> getTasks() {
         return List.copyOf(tasks);
@@ -49,7 +51,7 @@ public class TaskList {
     /**
      * Returns a stable chronological copy of the tasks, with incomplete tasks before completed tasks.
      *
-     * @return a read-only copy of the tasks in chronological order
+     * @return a read-only copy of the tasks in chronological order.
      */
     public List<Task> getChronologicallySortedTasks() {
         List<Task> sortedTasks = new ArrayList<>(tasks);
@@ -60,8 +62,8 @@ public class TaskList {
     /**
      * Returns the task at the given zero-based index.
      *
-     * @param index zero-based position of the task
-     * @return the task at the given index
+     * @param index zero-based position of the task.
+     * @return the task at the given index.
      */
     public Task get(int index) {
         return tasks.get(index);
@@ -70,18 +72,22 @@ public class TaskList {
     /**
      * Adds a task to the end of the list.
      *
-     * @param task task to add
+     * @param task task to add.
+     * @throws SumoException if a task with the same details already exists.
      */
-    public void add(Task task) {
+    public void add(Task task) throws SumoException {
         assert task != null : "A task list cannot contain a null task.";
+        if (tasks.stream().anyMatch(existing -> existing.hasSameDetails(task))) {
+            throw new SumoException("That task is already in your list.");
+        }
         tasks.add(task);
     }
 
     /**
      * Removes and returns the task at the given zero-based index.
      *
-     * @param index zero-based position of the task
-     * @return the removed task
+     * @param index zero-based position of the task.
+     * @return the removed task.
      */
     public Task delete(int index) {
         return tasks.remove(index);
@@ -90,8 +96,8 @@ public class TaskList {
     /**
      * Reinserts a task at a specific position when an operation is rolled back.
      *
-     * @param index zero-based position at which to insert the task
-     * @param task task to insert
+     * @param index zero-based position at which to insert the task.
+     * @param task task to insert.
      */
     public void insert(int index, Task task) {
         assert index >= 0 && index <= tasks.size() : "Rollback index must be within the list bounds.";
@@ -102,8 +108,8 @@ public class TaskList {
     /**
      * Updates the completion status of one task.
      *
-     * @param index zero-based position of the task
-     * @param isDone whether the task should be marked complete
+     * @param index zero-based position of the task.
+     * @param isDone whether the task should be marked complete.
      */
     public void setDone(int index, boolean isDone) {
         assert index >= 0 && index < tasks.size() : "Task status updates require a valid task index.";
@@ -117,8 +123,8 @@ public class TaskList {
     /**
      * Finds deadlines and events that occur on the requested date.
      *
-     * @param date date to search for
-     * @return matching tasks in their original order
+     * @param date date to search for.
+     * @return matching tasks in their original order.
      */
     public List<Task> findOn(LocalDate date) {
         assert date != null : "A date is required when filtering tasks.";
@@ -130,8 +136,8 @@ public class TaskList {
     /**
      * Finds tasks whose descriptions contain the requested keyword.
      *
-     * @param keyword text to search for
-     * @return matching tasks in their original order
+     * @param keyword text to search for.
+     * @return matching tasks in their original order.
      */
     public List<Task> find(String keyword) {
         assert keyword != null : "A keyword is required when searching tasks.";

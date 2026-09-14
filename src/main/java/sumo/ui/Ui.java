@@ -31,7 +31,7 @@ public class Ui {
     /**
      * Creates a UI that sends each output line to the given destination.
      *
-     * @param output destination for response lines
+     * @param output destination for response lines.
      */
     public Ui(Consumer<String> output) {
         this.scanner = new Scanner(System.in);
@@ -41,19 +41,19 @@ public class Ui {
     /**
      * Returns whether another console command is available.
      *
-     * @return whether another console command is available
+     * @return whether another console command is available.
      */
     public boolean hasNextCommand() {
         return scanner.hasNextLine();
     }
 
     /**
-     * Returns the next command with surrounding whitespace removed.
+     * Returns the next command for validation and whitespace normalization by the parser.
      *
-     * @return the next command, with surrounding whitespace removed
+     * @return the next command as entered.
      */
     public String readCommand() {
-        return scanner.nextLine().trim();
+        return scanner.nextLine();
     }
 
     /** Shows the application greeting. */
@@ -78,7 +78,7 @@ public class Ui {
     /**
      * Shows a command validation error.
      *
-     * @param message description of the validation error
+     * @param message description of the validation error.
      */
     public void showCommandError(String message) {
         output.accept(" I could not complete that command: " + message);
@@ -87,7 +87,7 @@ public class Ui {
     /**
      * Shows a file loading error.
      *
-     * @param message description of the loading error
+     * @param message description of the loading error.
      */
     public void showLoadingError(String message) {
         output.accept(" I could not load your saved tasks: " + message);
@@ -96,8 +96,8 @@ public class Ui {
     /**
      * Shows an invalid saved-task record while allowing other records to load.
      *
-     * @param lineNumber one-based line number of the invalid record
-     * @param message description of the record error
+     * @param lineNumber one-based line number of the invalid record.
+     * @param message description of the record error.
      */
     public void showInvalidTaskError(int lineNumber, String message) {
         output.accept(" I could not load saved task on line " + lineNumber + ": " + message);
@@ -106,7 +106,7 @@ public class Ui {
     /**
      * Shows a file saving error.
      *
-     * @param message description of the saving error
+     * @param message description of the saving error.
      */
     public void showSavingError(String message) {
         output.accept(" I could not save your tasks: " + message);
@@ -115,7 +115,7 @@ public class Ui {
     /**
      * Shows all tasks in their current order.
      *
-     * @param tasks tasks to display
+     * @param tasks tasks to display.
      */
     public void showTaskList(List<Task> tasks) {
         output.accept(" Here are the tasks in your list:");
@@ -125,7 +125,7 @@ public class Ui {
     /**
      * Shows tasks whose descriptions contain the requested keyword.
      *
-     * @param tasks matching tasks to display
+     * @param tasks matching tasks to display.
      */
     public void showMatchingTasks(List<Task> tasks) {
         output.accept(" Here are the matching tasks in your list:");
@@ -135,8 +135,8 @@ public class Ui {
     /**
      * Shows tasks that occur on the requested date.
      *
-     * @param date requested date
-     * @param tasks tasks occurring on the requested date
+     * @param date requested date.
+     * @param tasks tasks occurring on the requested date.
      */
     public void showTasksOnDate(LocalDateTime date, List<Task> tasks) {
         output.accept(" Here are the tasks on " + DateTimeDisplay.format(date, false) + ":");
@@ -185,8 +185,8 @@ public class Ui {
     /**
      * Shows a task that was added and the new list size.
      *
-     * @param task task that was added
-     * @param taskCount number of tasks after the addition
+     * @param task task that was added.
+     * @param taskCount number of tasks after the addition.
      */
     public void showTaskAdded(Task task, int taskCount) {
         output.accept(" Got it. I've added this task:");
@@ -197,7 +197,7 @@ public class Ui {
     /**
      * Shows a task that was marked complete.
      *
-     * @param task task that was marked complete
+     * @param task task that was marked complete.
      */
     public void showTaskMarked(Task task) {
         output.accept(" Nice! I've marked this task as done:");
@@ -207,7 +207,7 @@ public class Ui {
     /**
      * Shows a task that was marked incomplete.
      *
-     * @param task task that was marked incomplete
+     * @param task task that was marked incomplete.
      */
     public void showTaskUnmarked(Task task) {
         output.accept(" OK, I've marked this task as not done yet:");
@@ -217,8 +217,8 @@ public class Ui {
     /**
      * Shows a task that was deleted and the new list size.
      *
-     * @param task task that was deleted
-     * @param taskCount number of tasks after the deletion
+     * @param task task that was deleted.
+     * @param taskCount number of tasks after the deletion.
      */
     public void showTaskDeleted(Task task, int taskCount) {
         output.accept(" Noted. I've removed this task:");

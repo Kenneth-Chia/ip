@@ -2,6 +2,8 @@ package sumo;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 
 import sumo.command.Command;
 import sumo.exception.SumoException;
@@ -18,6 +20,7 @@ public class Sumo {
     private final Storage storage;
     private final Parser parser;
     private final TaskList tasks;
+    private final List<String> startupMessages = new ArrayList<>();
     private boolean isExit;
 
     /** Creates a Sumo application backed by the default task file. */
@@ -28,7 +31,7 @@ public class Sumo {
     /**
      * Creates a Sumo application backed by the given task file.
      *
-     * @param filePath path used to load and save tasks
+     * @param filePath path used to load and save tasks.
      */
     public Sumo(String filePath) {
         this.ui = new Ui();
@@ -36,10 +39,11 @@ public class Sumo {
         this.parser = new Parser();
         TaskList loadedTasks;
         try {
-            loadedTasks = new TaskList(storage.load(ui));
+            loadedTasks = new TaskList(storage.load(new Ui(startupMessages::add)));
         } catch (IOException exception) {
             loadedTasks = new TaskList();
-            ui.showLoadingError(getErrorMessage(exception));
+            new Ui(startupMessages::add).showLoadingError(getErrorMessage(exception)
+                    + " Saving is disabled; fix the data file and restart Sumo.");
         }
         this.tasks = loadedTasks;
         this.isExit = false;
@@ -48,6 +52,7 @@ public class Sumo {
     /** Starts the command-reading loop. */
     public void run() {
         ui.showWelcome();
+        startupMessages.forEach(System.out::println);
         while (!isExit && ui.hasNextCommand()) {
             String input = ui.readCommand();
             ui.showSeparator();
@@ -59,8 +64,8 @@ public class Sumo {
     /**
      * Returns Sumo's response to one GUI command.
      *
-     * @param input command entered by the user
-     * @return response text to display in the GUI
+     * @param input command entered by the user.
+     * @return response text to display in the GUI.
      */
     public String getResponse(String input) {
         StringBuilder response = new StringBuilder();
@@ -70,14 +75,23 @@ public class Sumo {
             }
             response.append(line);
         });
-        executeCommand(input.trim(), responseUi);
+        executeCommand(input, responseUi);
         return response.toString().strip();
+    }
+
+    /**
+     * Returns loading warnings for display when the GUI opens.
+     *
+     * @return loading warnings, or an empty string when all tasks loaded successfully.
+     */
+    public String getStartupMessage() {
+        return String.join(System.lineSeparator(), startupMessages).strip();
     }
 
     /**
      * Returns whether the user has ended the current session.
      *
-     * @return whether an exit command has been executed
+     * @return whether an exit command has been executed.
      */
     public boolean isExit() {
         return isExit;
@@ -86,7 +100,7 @@ public class Sumo {
     /**
      * Starts Sumo using its default task file.
      *
-     * @param args command-line arguments, which Sumo ignores
+     * @param args command-line arguments, which Sumo ignores.
      */
     public static void main(String[] args) {
         new Sumo().run();

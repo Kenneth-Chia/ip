@@ -6,10 +6,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+/** Tests responses, persistence, and recovery through Sumo's shared command entry point. */
 class SumoTest {
     @TempDir
     private Path temporaryDirectory;
@@ -36,7 +38,8 @@ class SumoTest {
 
         assertEquals("I could not complete that command: I do not recognise that command. "
                 + "Try todo, deadline, event, list, sort, find, on, mark, unmark, or delete.", response);
-        assertEquals(response, sumo.getResponse("sort descending"));
+        assertEquals("I could not complete that command: Use: sort. This command takes no arguments.",
+                sumo.getResponse("sort descending"));
     }
 
     @Test
@@ -78,6 +81,77 @@ class SumoTest {
         assertFalse(sumo.isExit());
         assertEquals("Bye. Hope to see you again soon!", sumo.getResponse("bye"));
         assertTrue(sumo.isExit());
+    }
+
+    @Test
+    void getResponse_duplicateRejectedWithoutChangingSavedTasks() throws Exception {
+        Sumo sumo = createSumo();
+        sumo.getResponse("todo read book");
+        sumo.getResponse("mark 1");
+        Path dataFile = temporaryDirectory.resolve("sumo.txt");
+        String original = Files.readString(dataFile);
+
+        assertEquals("I could not complete that command: That task is already in your list.",
+                sumo.getResponse("todo  READ  book"));
+        assertEquals(original, Files.readString(dataFile));
+        assertTrue(sumo.getResponse("list").contains("1.[T][X] read book"));
+    }
+
+    @Test
+    void getResponse_saveFailure_allMutationsRolledBackAndReadsStillWork() throws Exception {
+        Sumo sumo = createSumo();
+        sumo.getResponse("todo first");
+        sumo.getResponse("todo second");
+        sumo.getResponse("mark 2");
+        String originalList = sumo.getResponse("list");
+        Path dataFile = temporaryDirectory.resolve("sumo.txt");
+        Files.writeString(dataFile, "T | 0 | external edit");
+
+        for (String command : List.of("todo third", "mark 1", "unmark 2", "delete 1")) {
+            assertEquals("I could not save your tasks: The data file changed outside this session. "
+                    + "Restart Sumo before making changes.", sumo.getResponse(command));
+            assertEquals(originalList, sumo.getResponse("list"));
+            assertEquals("T | 0 | external edit", Files.readString(dataFile));
+        }
+        assertEquals("Bye. Hope to see you again soon!", sumo.getResponse("bye"));
+    }
+
+    @Test
+    void getResponse_corruptFile_warningVisibleAndOriginalPreserved() throws Exception {
+        Path dataFile = temporaryDirectory.resolve("sumo.txt");
+        String original = "T | 0 | first\ninvalid record\nT | 0 | last";
+        Files.writeString(dataFile, original);
+        Sumo sumo = createSumo();
+
+        assertTrue(sumo.getStartupMessage().contains("line 2"));
+        assertTrue(sumo.getStartupMessage().contains("Saving is disabled"));
+        assertTrue(sumo.getResponse("list").contains("2.[T][ ] last"));
+        assertTrue(sumo.getResponse("delete 1").startsWith("I could not save your tasks:"));
+        assertTrue(sumo.getResponse("list").contains("1.[T][ ] first"));
+        assertEquals(original, Files.readString(dataFile));
+    }
+
+    @Test
+    void getResponse_unreadableFile_warningVisibleAndSavingBlocked() throws Exception {
+        Path dataFile = temporaryDirectory.resolve("sumo.txt");
+        Files.write(dataFile, new byte[] {(byte) 0xc3, 0x28});
+        Sumo sumo = createSumo();
+
+        assertTrue(sumo.getStartupMessage().contains("I could not load your saved tasks:"));
+        assertTrue(sumo.getStartupMessage().contains("Saving is disabled"));
+        assertTrue(sumo.getResponse("todo new").startsWith("I could not save your tasks:"));
+        assertEquals("Here are the tasks in your list:", sumo.getResponse("list"));
+        assertEquals(2, Files.size(dataFile));
+    }
+
+    @Test
+    void getResponse_invalidInput_sessionCanContinue() {
+        Sumo sumo = createSumo();
+
+        assertEquals("I could not complete that command: Please enter a command.", sumo.getResponse(null));
+        assertEquals("I could not complete that command: Please enter a command.", sumo.getResponse("   "));
+        assertTrue(sumo.getResponse("todo first\nsecond").startsWith("I could not complete that command:"));
+        assertTrue(sumo.getResponse("todo valid").startsWith("Got it."));
     }
 
     private Sumo createSumo() {

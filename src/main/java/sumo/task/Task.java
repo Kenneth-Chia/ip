@@ -16,19 +16,29 @@ public class Task {
     /**
      * Creates a new incomplete task with the given description.
      *
-     * @param description the task text
+     * @param description the task text.
+     * @throws IllegalArgumentException if the description cannot be stored safely.
      */
     public Task(String description) {
-        assert description != null && !description.isBlank()
-                && !description.contains(" | ") : "Task descriptions must be persistable.";
-        this.description = description;
+        if (description == null || description.isBlank()) {
+            throw new IllegalArgumentException("Task descriptions cannot be blank.");
+        }
+        if (description.codePoints().anyMatch(character -> (Character.isISOControl(character) && character != '\t')
+                || character == '\u2028' || character == '\u2029')) {
+            throw new IllegalArgumentException("Task descriptions cannot contain line breaks or control characters.");
+        }
+        String normalizedDescription = description.replaceAll("\\h+", " ").strip();
+        if (normalizedDescription.isEmpty() || normalizedDescription.contains("|")) {
+            throw new IllegalArgumentException("Task descriptions must be non-blank and cannot contain '|'.");
+        }
+        this.description = normalizedDescription;
         this.isDone = false;
     }
 
     /**
      * Returns the icon used to show whether this task is done.
      *
-     * @return "X" for a completed task or a space otherwise
+     * @return "X" for a completed task or a space otherwise.
      */
     public String getStatusIcon() {
         return isDone ? "X" : " ";
@@ -41,7 +51,7 @@ public class Task {
      * compatibility. Concrete task types override this method when they have
      * a type icon.</p>
      *
-     * @return an empty string for a general task
+     * @return an empty string for a general task.
      */
     public String getTypeIcon() {
         return "";
@@ -50,7 +60,7 @@ public class Task {
     /**
      * Returns this task in the line-based format used for persistent storage.
      *
-     * @return the task type, completion status, and description
+     * @return the task type, completion status, and description.
      */
     public String toDataString() {
         String completionStatus = isDone ? COMPLETE_STATUS : INCOMPLETE_STATUS;
@@ -61,7 +71,7 @@ public class Task {
     /**
      * Returns this task in the original Sumo display format.
      *
-     * @return the formatted task
+     * @return the formatted task.
      */
     @Override
     public String toString() {
@@ -85,7 +95,7 @@ public class Task {
     /**
      * Returns whether this task has been completed.
      *
-     * @return whether this task has been completed
+     * @return whether this task has been completed.
      */
     public boolean isDone() {
         return isDone;
@@ -94,9 +104,21 @@ public class Task {
     /**
      * Returns the task description.
      *
-     * @return the task description
+     * @return the task description.
      */
     public String getDescription() {
         return description;
+    }
+
+    /**
+     * Returns whether another task has the same type and description, ignoring case and completion status.
+     * Dated task types additionally compare their dates and times.
+     *
+     * @param other task to compare.
+     * @return whether the tasks describe the same work.
+     */
+    public boolean hasSameDetails(Task other) {
+        return other != null && getClass().equals(other.getClass())
+                && description.equalsIgnoreCase(other.description);
     }
 }

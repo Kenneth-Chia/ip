@@ -16,9 +16,9 @@ public class Event extends Task {
     /**
      * Creates a new incomplete event.
      *
-     * @param description the event text
-     * @param from the event start date and time
-     * @param to the event end date and time
+     * @param description the event text.
+     * @param from the event start date and time.
+     * @param to the event end date and time.
      */
     public Event(String description, LocalDateTime from, LocalDateTime to) {
         this(description, from, to, true, true);
@@ -27,9 +27,9 @@ public class Event extends Task {
     /**
      * Creates a new incomplete event for date-only values.
      *
-     * @param description the event text
-     * @param from the event start date
-     * @param to the event end date
+     * @param description the event text.
+     * @param from the event start date.
+     * @param to the event end date.
      */
     public Event(String description, LocalDate from, LocalDate to) {
         this(description, from.atStartOfDay(), to.atStartOfDay(), false, false);
@@ -38,16 +38,20 @@ public class Event extends Task {
     /**
      * Creates an event while retaining whether each input included a time.
      *
-     * @param description the event text
-     * @param from the event start date and time
-     * @param to the event end date and time
-     * @param hasFromTime whether the start input included a time
-     * @param hasToTime whether the end input included a time
+     * @param description the event text.
+     * @param from the event start date and time.
+     * @param to the event end date and time.
+     * @param hasFromTime whether the start input included a time.
+     * @param hasToTime whether the end input included a time.
+     * @throws IllegalArgumentException if the end is not after the start.
      */
     public Event(String description, LocalDateTime from, LocalDateTime to,
             boolean hasFromTime, boolean hasToTime) {
         super(description);
         assert from != null && to != null : "An event must have both endpoints.";
+        if (!from.isBefore(to)) {
+            throw new IllegalArgumentException("An event's end must be after its start.");
+        }
         assert hasFromTime || from.toLocalTime().equals(LocalTime.MIDNIGHT)
                 : "A date-only event start must be normalized to midnight.";
         assert hasToTime || to.toLocalTime().equals(LocalTime.MIDNIGHT)
@@ -61,7 +65,7 @@ public class Event extends Task {
     /**
      * Returns the event type icon.
      *
-     * @return the event type icon
+     * @return the event type icon.
      */
     @Override
     public String getTypeIcon() {
@@ -71,7 +75,7 @@ public class Event extends Task {
     /**
      * Returns the event start date or time.
      *
-     * @return the event start date or time
+     * @return the event start date or time.
      */
     public LocalDateTime getFrom() {
         return from;
@@ -80,16 +84,22 @@ public class Event extends Task {
     /**
      * Returns the event end date or time.
      *
-     * @return the event end date or time
+     * @return the event end date or time.
      */
     public LocalDateTime getTo() {
         return to;
     }
 
+    @Override
+    public boolean hasSameDetails(Task other) {
+        return super.hasSameDetails(other) && from.equals(((Event) other).from)
+                && to.equals(((Event) other).to);
+    }
+
     /**
      * Returns this event in the line-based format used for persistent storage.
      *
-     * @return the task type, completion status, description, start, and end
+     * @return the task type, completion status, description, start, and end.
      */
     @Override
     public String toDataString() {
@@ -101,7 +111,7 @@ public class Event extends Task {
     /**
      * Returns this event in the format used by Sumo's task list.
      *
-     * @return the formatted event
+     * @return the formatted event.
      */
     @Override
     public String toString() {

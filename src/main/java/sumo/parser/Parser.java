@@ -8,6 +8,8 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.time.format.ResolverStyle;
 import java.util.Locale;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import sumo.command.Command;
 import sumo.command.ExitCommand;
@@ -32,6 +34,7 @@ public class Parser {
             .withResolverStyle(ResolverStyle.STRICT);
     private static final DateTimeFormatter TIME = DateTimeFormatter.ofPattern("HHmm", Locale.ENGLISH)
             .withResolverStyle(ResolverStyle.STRICT);
+    private static final Pattern PARAMETER = Pattern.compile("(?<!\\S)/\\S+");
 
     /** Identifies the action requested by a parsed command. */
     public enum CommandType {
@@ -69,7 +72,7 @@ public class Parser {
         /**
          * Returns the action represented by this command.
          *
-         * @return action represented by this command
+         * @return action represented by this command.
          */
         public CommandType getType() {
             return type;
@@ -78,7 +81,7 @@ public class Parser {
         /**
          * Returns the task to add.
          *
-         * @return task to add, or {@code null} for commands that target an existing task
+         * @return task to add, or {@code null} for commands that target an existing task.
          */
         public Task getTask() {
             return task;
@@ -87,7 +90,7 @@ public class Parser {
         /**
          * Returns the zero-based target index.
          *
-         * @return zero-based target index, or {@code -1} when adding a task
+         * @return zero-based target index, or {@code -1} when adding a task.
          */
         public int getTaskIndex() {
             return taskIndex;
@@ -95,7 +98,7 @@ public class Parser {
 
         /** Executes a mutation that has not yet been extracted into its own command class. */
         @Override
-        public void execute(TaskList tasks, Ui ui, Storage storage) throws IOException {
+        public void execute(TaskList tasks, Ui ui, Storage storage) throws IOException, SumoException {
             switch (type) {
                 case MARK:
                     updateTaskStatus(tasks, ui, storage, true);
@@ -146,7 +149,7 @@ public class Parser {
         }
 
         /** Adds a task and removes it again if saving fails. */
-        private void addTask(TaskList tasks, Ui ui, Storage storage) throws IOException {
+        private void addTask(TaskList tasks, Ui ui, Storage storage) throws IOException, SumoException {
             tasks.add(task);
             try {
                 storage.save(tasks.getTasks());
@@ -161,21 +164,30 @@ public class Parser {
     /**
      * Parses and validates one user command.
      *
-     * @param command the user's input
-     * @param taskCount the current number of tasks, used to validate task numbers
-     * @return structured command data
-     * @throws SumoException if the command or any argument is invalid
+     * @param command the user's input.
+     * @param taskCount the current number of tasks, used to validate task numbers.
+     * @return structured command data.
+     * @throws SumoException if the command or any argument is invalid.
      */
     public Command parse(String command, int taskCount) throws SumoException {
-        assert command != null : "The parser requires a command string.";
         assert taskCount >= 0 : "The task count cannot be negative.";
-        if ("bye".equals(command)) {
+        ensureNotBlank(command, "Please enter a command.");
+        if (command.codePoints().anyMatch(character -> (Character.isISOControl(character) && character != '\t')
+                || character == '\u2028' || character == '\u2029')) {
+            throw new SumoException("Commands must be a single line without control characters.");
+        }
+        command = command.replaceAll("\\h+", " ").strip();
+        ensureNotBlank(command, "Please enter a command.");
+        if (isCommand(command, "bye")) {
+            ensureNoArgument(command, "bye");
             return new ExitCommand();
         }
-        if ("list".equals(command)) {
+        if (isCommand(command, "list")) {
+            ensureNoArgument(command, "list");
             return new ListCommand();
         }
-        if ("sort".equals(command)) {
+        if (isCommand(command, "sort")) {
+            ensureNoArgument(command, "sort");
             return new SortCommand();
         }
         return parseCommandWithArgument(command, taskCount);
@@ -236,9 +248,16 @@ public class Parser {
         return input.substring(command.length()).trim();
     }
 
+    /** Rejects accidental arguments to commands that take none. */
+    private void ensureNoArgument(String input, String command) throws SumoException {
+        if (!getCommandArgument(input, command).isEmpty()) {
+            throw new SumoException("Use: " + command + ". This command takes no arguments.");
+        }
+    }
+
     /** Parses a deadline command and preserves whether its date included a time. */
     private Command parseDeadline(String taskText) throws SumoException {
-        String[] parts = splitCommand(taskText, "Use: deadline <description> /by <date>.", " /by ");
+        String[] parts = splitCommand(taskText, "Use: deadline <description> /by <date>.", "/by");
         ParsedDateTime deadline = parseDateTime(parts[1], "Use: deadline <description> /by <date> [HHmm].");
         return addCommand(new Deadline(parts[0], deadline.value, deadline.hasTime));
     }
@@ -246,10 +265,13 @@ public class Parser {
     /** Parses an event command and preserves each endpoint's input precision. */
     private Command parseEvent(String taskText) throws SumoException {
         String splitMessage = "Use: event <description> /from <start> /to <end>.";
-        String[] parts = splitCommand(taskText, splitMessage, " /from ", " /to ");
+        String[] parts = splitCommand(taskText, splitMessage, "/from", "/to");
         String message = "Use: event <description> /from <date> [HHmm] /to <date> [HHmm].";
         ParsedDateTime from = parseDateTime(parts[1], message);
         ParsedDateTime to = parseDateTime(parts[2], message);
+        if (!from.value.isBefore(to.value)) {
+            throw new SumoException("An event's end must be after its start.");
+        }
         return addCommand(new Event(parts[0], from.value, to.value, from.hasTime, to.hasTime));
     }
 
@@ -273,15 +295,19 @@ public class Parser {
         if (text.isBlank()) {
             throw new SumoException("Please specify the number of the task to update.");
         }
+        if (!text.matches("[0-9]+")) {
+            throw new SumoException("Task numbers must be whole numbers.");
+        }
         try {
-            int index = Integer.parseInt(text) - 1;
-            if (index < 0 || index >= taskCount) {
+            int number = Integer.parseInt(text);
+            if (number < 1 || number > taskCount) {
                 throw new SumoException("That task number is not in your list.");
             }
+            int index = number - 1;
             assert index >= 0 && index < taskCount : "Validated task number must be in the task list.";
             return new ParsedCommand(type, null, index);
         } catch (NumberFormatException exception) {
-            throw new SumoException("Task numbers must be whole numbers.");
+            throw new SumoException("That task number is not in your list.");
         }
     }
 
@@ -293,14 +319,17 @@ public class Parser {
     /** Splits a command by ordered markers and validates all resulting fields. */
     private String[] splitCommand(String text, String message, String... markers) throws SumoException {
         String[] parts = new String[markers.length + 1];
+        Matcher parameters = PARAMETER.matcher(text);
         int partStart = 0;
         for (int i = 0; i < markers.length; i++) {
-            int markerIndex = text.indexOf(markers[i], partStart);
-            if (markerIndex < 0) {
+            if (!parameters.find() || !parameters.group().equals(markers[i])) {
                 throw new SumoException(message);
             }
-            parts[i] = text.substring(partStart, markerIndex).trim();
-            partStart = markerIndex + markers[i].length();
+            parts[i] = text.substring(partStart, parameters.start()).trim();
+            partStart = parameters.end();
+        }
+        if (parameters.find()) {
+            throw new SumoException(message + " Specify each parameter exactly once, in the shown order.");
         }
         parts[parts.length - 1] = text.substring(partStart).trim();
 
@@ -332,11 +361,19 @@ public class Parser {
 
     /** Parses either of the date formats accepted by Sumo. */
     private LocalDate parseDate(String text) throws DateTimeParseException {
-        try {
-            return LocalDate.parse(text, ISO_DATE);
-        } catch (DateTimeParseException exception) {
-            return LocalDate.parse(text, DAY_MONTH_DATE);
+        if (!text.matches("[0-9]{4}-[0-9]{2}-[0-9]{2}|[0-9]{1,2}/[0-9]{1,2}/[0-9]{4}")) {
+            throw new DateTimeParseException("Unsupported date format.", text, 0);
         }
+        LocalDate date;
+        try {
+            date = LocalDate.parse(text, ISO_DATE);
+        } catch (DateTimeParseException exception) {
+            date = LocalDate.parse(text, DAY_MONTH_DATE);
+        }
+        if (date.getYear() < 1) {
+            throw new DateTimeParseException("Years must be between 0001 and 9999.", text, 0);
+        }
+        return date;
     }
 
     private void ensureNotBlank(String text, String message) throws SumoException {
@@ -346,11 +383,12 @@ public class Parser {
     }
 
     private void ensurePersistable(String text) throws SumoException {
-        if (text.contains(" | ")) {
-            throw new SumoException("Task text cannot contain ' | '.");
+        if (text.contains("|")) {
+            throw new SumoException("Task text cannot contain '|'.");
         }
     }
 
+    /** Retains the date value and whether the user supplied a time. */
     private static class ParsedDateTime {
         private final LocalDateTime value;
         private final boolean hasTime;

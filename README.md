@@ -98,6 +98,33 @@ Prerequisites: JDK 25, update Intellij to the most recent version.
 
 **Warning:** Keep the `src\main\java` folder as the root folder for Java files (i.e., don't rename those folders or move Java files to another folder outside of this folder path), as this is the default location some tools (e.g., Gradle) expect to find Java files.
 
+## Command validation and saved-data recovery
+
+Sumo accepts leading, trailing, and repeated horizontal whitespace (including tabs), and stores
+descriptions with single spaces. Commands are case-sensitive. `list`, `sort`, and `bye` take no arguments;
+task numbers must contain only digits and refer to a task in the normal list.
+
+Use `deadline <description> /by <date> [HHmm]` or
+`event <description> /from <date> [HHmm] /to <date> [HHmm]`. Parameters must appear exactly once,
+in that order. Standalone slash-prefixed tokens in dated commands are reserved for parameters.
+Dates must be real calendar dates in `yyyy-MM-dd` or `d/M/yyyy` format, with years from 0001 to 9999.
+Times use four-digit 24-hour format, from `0000` to `2359`. An event must end strictly after it starts;
+an omitted time means midnight, so a same-day event needs an explicit end time after its start.
+Descriptions cannot contain `|`, line breaks, or control characters.
+
+Tasks with the same type, description, and dates/times are duplicates even when their capitalization,
+spacing, or completion status differs. A date without a time compares equal to that date at midnight.
+Use different dates or details for recurring work, or delete the old task before adding it again.
+
+A missing data folder or file is created as needed. When saved records are malformed or duplicated,
+Sumo reports their line numbers and loads the valid records for viewing. Saving is disabled to preserve
+the original file. The same protection applies when the file cannot be read. Back up and repair
+`data/sumo.txt` (including its permissions, if necessary), then restart Sumo. Loading warnings appear
+in both the console and chat window.
+
+If saving fails, the attempted change is rolled back and Sumo shows an error. Files changed or deleted
+outside the current session are detected before saving; restart to load the current data before editing.
+
 ## Checking the Java coding standard
 
 This project uses Checkstyle to automate part of the SE-EDU Java coding standard. Run the

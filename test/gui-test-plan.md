@@ -21,3 +21,11 @@ Confirm it starts and accepts commands, with blank avatar areas beside the dialo
 
 Enter enough valid commands to exceed the visible dialog area. Confirm that the scroll pane moves to
 show the newest dialog after each response is added.
+
+## GUI-004 — Show saved-data warnings and preserve rejected records
+
+Back up `data/sumo.txt`, then put a valid record followed by an invalid record in the file:
+`T | 0 | read book` followed by `invalid record` on its own line. Start Sumo and confirm the chat
+shows a warning about line 2 and says saving is disabled. Send `list` and confirm the valid task appears.
+Send `delete 1` and confirm a saving error appears; `list` must still show the task and the original
+file must remain unchanged. Close Sumo and restore the backup after this check.

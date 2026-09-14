@@ -5,6 +5,8 @@ import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
@@ -133,6 +135,86 @@ public class ParserTest {
     @Test
     public void parse_unknownCommand_exceptionThrown() {
         assertThrows(SumoException.class, () -> parser.parse("remind me", 0));
+    }
+
+    @Test
+    public void parse_extraWhitespace_normalizedAcrossCommands() throws SumoException {
+        assertInstanceOf(ListCommand.class, parser.parse(" \tlist \t", 0));
+        assertInstanceOf(ExitCommand.class, parser.parse("\u00a0bye\u00a0", 0));
+        assertInstanceOf(SortCommand.class, parser.parse("  sort  ", 0));
+        ParsedCommand indexed = assertInstanceOf(ParsedCommand.class, parser.parse(" mark\t  1 ", 1));
+        assertEquals(0, indexed.getTaskIndex());
+        ParsedCommand command = assertInstanceOf(ParsedCommand.class,
+                parser.parse("  event\tcamp   trip \t/from\t2026-02-03   0900 /to   2026-02-03  1000  ", 0));
+        assertEquals("E | 0 | camp trip | 2026-02-03T09:00 | 2026-02-03T10:00", command.getTask().toDataString());
+    }
+
+    @Test
+    public void parse_emptyOrControlCharacters_userFacingError() {
+        for (String input : Arrays.asList(null, "", "   ", "\t", "\u00a0", "todo one\ntodo two",
+                "todo one\rtwo", "todo one\u0000two", "todo one\u001btwo", "todo one\u2028two")) {
+            assertThrows(SumoException.class, () -> parser.parse(input, 0), String.valueOf(input));
+        }
+    }
+
+    @Test
+    public void parse_repeatedMissingOrMisplacedParameters_rejected() {
+        for (String input : List.of("deadline /by 2026-02-03", "deadline report /by",
+                "deadline report /by /by 2026-02-03", "deadline report /by 2026-02-03 /by 2026-02-04",
+                "deadline report /to 2026-02-03 /by 2026-02-04", "deadline report /by2026-02-03",
+                "event camp /from /to 2026-02-04", "event camp /to 2026-02-04 /from 2026-02-03",
+                "event camp /from 2026-02-03 /from 2026-02-04 /to 2026-02-05",
+                "event camp /from 2026-02-03 /to 2026-02-04 /to 2026-02-05",
+                "event camp /from 2026-02-03 /to 2026-02-04 /extra value")) {
+            assertThrows(SumoException.class, () -> parser.parse(input, 0), input);
+        }
+    }
+
+    @Test
+    public void parse_invalidCalendarValuesAndFormats_rejected() {
+        for (String date : List.of("2026-02-30", "29/2/2025", "31/4/2026", "2026-13-01", "0000-01-01",
+                "+10000-01-01", "1/1/26", "2026-02-03 2400", "2026-02-03 1260", "2026-02-03 9:30",
+                "2026-02-03 0900 extra")) {
+            assertThrows(SumoException.class, () -> parser.parse("deadline report /by " + date, 0), date);
+            assertThrows(SumoException.class, () -> parser.parse("on " + date, 0), date);
+        }
+    }
+
+    @Test
+    public void parse_equalOrReversedEventEndpoints_rejected() {
+        for (String input : List.of("event camp /from 2026-02-03 /to 2026-02-03",
+                "event camp /from 2026-02-04 /to 2026-02-03",
+                "event camp /from 2026-02-03 0900 /to 2026-02-03 0900",
+                "event camp /from 2026-02-03 1000 /to 2026-02-03 0900",
+                "event camp /from 2026-02-03 1000 /to 2026-02-03")) {
+            assertThrows(SumoException.class, () -> parser.parse(input, 0), input);
+        }
+    }
+
+    @Test
+    public void parse_validLeapDayAndTimeBoundaries_accepted() throws SumoException {
+        assertInstanceOf(OnCommand.class, parser.parse("on 29/2/2024", 0));
+        ParsedCommand command = assertInstanceOf(ParsedCommand.class,
+                parser.parse("event leap day /from 2024-02-29 0000 /to 2024-02-29 2359", 0));
+        assertEquals("E | 0 | leap day | 2024-02-29T00:00 | 2024-02-29T23:59", command.getTask().toDataString());
+    }
+
+    @Test
+    public void parse_malformedAndOverflowingTaskNumbers_rejected() {
+        for (String number : List.of("-1", "+1", "1.0", "1 2", "1!", "\u0661", "2147483648",
+                "999999999999999999999999", "0", "2")) {
+            for (String command : List.of("mark", "unmark", "delete")) {
+                assertThrows(SumoException.class, () -> parser.parse(command + " " + number, 1), number);
+            }
+        }
+    }
+
+    @Test
+    public void parse_reservedPipes_rejectedAtFieldBoundaries() {
+        for (String input : List.of("todo a|b", "deadline report | /by 2026-02-03",
+                "event |camp /from 2026-02-03 /to 2026-02-04")) {
+            assertThrows(SumoException.class, () -> parser.parse(input, 0), input);
+        }
     }
 
     /** Checks the type and zero-based index of an indexed command. */

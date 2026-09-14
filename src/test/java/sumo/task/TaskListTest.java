@@ -12,6 +12,8 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
+import sumo.exception.SumoException;
+
 /** Tests the collection operations and date filtering performed by {@link TaskList}. */
 public class TaskListTest {
     /** Verifies that construction takes a defensive copy of the source list. */
@@ -39,7 +41,7 @@ public class TaskListTest {
 
     /** Verifies add, delete, and insertion order. */
     @Test
-    public void addDeleteAndInsert_tasksRemainInExpectedOrder() {
+    public void addDeleteAndInsert_tasksRemainInExpectedOrder() throws SumoException {
         Todo first = new Todo("first");
         Todo second = new Todo("second");
         TaskList taskList = new TaskList();
@@ -51,6 +53,31 @@ public class TaskListTest {
 
         assertSame(first, taskList.get(0));
         assertSame(second, taskList.get(1));
+    }
+
+    @Test
+    public void add_duplicateWithDifferentCaseSpacingAndStatus_rejected() throws SumoException {
+        Todo original = new Todo("read book");
+        original.markAsDone();
+        TaskList tasks = new TaskList(List.of(original));
+
+        assertThrows(SumoException.class, () -> tasks.add(new Todo("  READ   book  ")));
+        assertEquals(List.of(original), tasks.getTasks());
+    }
+
+    @Test
+    public void add_datedDuplicates_rejectedButDifferentDatesAndTypesAllowed() throws SumoException {
+        LocalDate date = LocalDate.of(2026, 2, 3);
+        TaskList tasks = new TaskList();
+        tasks.add(new Deadline("report", date));
+        tasks.add(new Event("report", date, date.plusDays(1)));
+
+        assertThrows(SumoException.class, () -> tasks.add(new Deadline("REPORT", date.atStartOfDay())));
+        assertThrows(SumoException.class, () -> tasks.add(new Event("report", date, date.plusDays(1))));
+        tasks.add(new Todo("report"));
+        tasks.add(new Deadline("report", date.plusDays(1)));
+        tasks.add(new Event("report", date, date.plusDays(2)));
+        assertEquals(5, tasks.size());
     }
 
     /** Verifies that completion status can be set and cleared. */

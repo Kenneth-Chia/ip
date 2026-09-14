@@ -809,7 +809,7 @@ The runner parses the numbered `Command/input` entries and their following fence
 
      ```text
      ____________________________________________________________
-      I could not complete that command: I do not recognise that command. Try todo, deadline, event, list, sort, find, on, mark, unmark, or delete.
+      I could not complete that command: Use: sort. This command takes no arguments.
      ____________________________________________________________
      ```
 
@@ -824,6 +824,355 @@ The runner parses the numbered `Command/input` entries and their following fence
      ```
 
 - Notes: Run all eight inputs in one continuous process so the task state is preserved.
+
+### UI-012 — Accept flexible whitespace and explain missing inputs
+
+- Aim: Verify surrounding and repeated spaces are accepted, while blank commands, missing fields, and extra arguments leave the session usable.
+- Inputs, commands, and expected output:
+
+  1. Command/input: `  todo   read    book  `
+
+     Expected output:
+
+     ```text
+     ____________________________________________________________
+      Got it. I've added this task:
+        [T][ ] read book
+      Now you have 1 tasks in the list.
+     ____________________________________________________________
+     ```
+
+     Expected `data/sumo.txt` content immediately after the command:
+
+     ```text
+     T | 0 | read book
+     ```
+
+  2. Command/input: `  mark   1  `
+
+     Expected output:
+
+     ```text
+     ____________________________________________________________
+      Nice! I've marked this task as done:
+        [T][X] read book
+     ____________________________________________________________
+     ```
+
+  3. Command/input: `   `
+
+     Expected output:
+
+     ```text
+     ____________________________________________________________
+      I could not complete that command: Please enter a command.
+     ____________________________________________________________
+     ```
+
+  4. Command/input: `list extra`
+
+     Expected output:
+
+     ```text
+     ____________________________________________________________
+      I could not complete that command: Use: list. This command takes no arguments.
+     ____________________________________________________________
+     ```
+
+  5. Command/input: `bye now`
+
+     Expected output:
+
+     ```text
+     ____________________________________________________________
+      I could not complete that command: Use: bye. This command takes no arguments.
+     ____________________________________________________________
+     ```
+
+  6. Command/input: `delete`
+
+     Expected output:
+
+     ```text
+     ____________________________________________________________
+      I could not complete that command: Please specify the number of the task to update.
+     ____________________________________________________________
+     ```
+
+  7. Command/input: `delete 999999999999999999999999`
+
+     Expected output:
+
+     ```text
+     ____________________________________________________________
+      I could not complete that command: That task number is not in your list.
+     ____________________________________________________________
+     ```
+
+  8. Command/input: `mark +1`
+
+     Expected output:
+
+     ```text
+     ____________________________________________________________
+      I could not complete that command: Task numbers must be whole numbers.
+     ____________________________________________________________
+     ```
+
+  9. Command/input: `  list  `
+
+     Expected output:
+
+     ```text
+     ____________________________________________________________
+      Here are the tasks in your list:
+      1.[T][X] read book
+     ____________________________________________________________
+     ```
+
+     Expected `data/sumo.txt` content immediately after the command:
+
+     ```text
+     T | 1 | read book
+     ```
+
+  10. Command/input: `bye`
+
+     Expected output:
+
+     ```text
+     ____________________________________________________________
+     Bye. Hope to see you again soon!
+     ____________________________________________________________
+     ```
+
+### UI-013 — Reject malformed parameters and invalid dates
+
+- Aim: Verify repeated, missing, or misplaced parameters, impossible dates, invalid times, and reserved pipe characters are rejected before creating a task.
+- Inputs, commands, and expected output:
+
+  1. Command/input: `deadline report /by`
+
+     Expected output:
+
+     ```text
+     ____________________________________________________________
+      I could not complete that command: Use: deadline <description> /by <date>.
+     ____________________________________________________________
+     ```
+
+  2. Command/input: `deadline report /by 2026-02-03 /by 2026-02-04`
+
+     Expected output:
+
+     ```text
+     ____________________________________________________________
+      I could not complete that command: Use: deadline <description> /by <date>. Specify each parameter exactly once, in the shown order.
+     ____________________________________________________________
+     ```
+
+  3. Command/input: `event camp /to 2026-02-04 /from 2026-02-03`
+
+     Expected output:
+
+     ```text
+     ____________________________________________________________
+      I could not complete that command: Use: event <description> /from <start> /to <end>.
+     ____________________________________________________________
+     ```
+
+  4. Command/input: `event camp /from 2026-02-03 /to 2026-02-04 /to 2026-02-05`
+
+     Expected output:
+
+     ```text
+     ____________________________________________________________
+      I could not complete that command: Use: event <description> /from <start> /to <end>. Specify each parameter exactly once, in the shown order.
+     ____________________________________________________________
+     ```
+
+  5. Command/input: `deadline report /by 2026-02-30`
+
+     Expected output:
+
+     ```text
+     ____________________________________________________________
+      I could not complete that command: Use: deadline <description> /by <date> [HHmm]. Dates must use yyyy-MM-dd or d/M/yyyy, optionally followed by HHmm.
+     ____________________________________________________________
+     ```
+
+  6. Command/input: `deadline report /by 2026-02-03 2400`
+
+     Expected output:
+
+     ```text
+     ____________________________________________________________
+      I could not complete that command: Use: deadline <description> /by <date> [HHmm]. Dates must use yyyy-MM-dd or d/M/yyyy, optionally followed by HHmm.
+     ____________________________________________________________
+     ```
+
+  7. Command/input: `on 29/2/2025`
+
+     Expected output:
+
+     ```text
+     ____________________________________________________________
+      I could not complete that command: Use: on <date>. Dates must use yyyy-MM-dd or d/M/yyyy.
+     ____________________________________________________________
+     ```
+
+  8. Command/input: `deadline report | /by 2026-02-03`
+
+     Expected output:
+
+     ```text
+     ____________________________________________________________
+      I could not complete that command: Task text cannot contain '|'.
+     ____________________________________________________________
+     ```
+
+  9. Command/input: `list`
+
+     Expected output:
+
+     ```text
+     ____________________________________________________________
+      Here are the tasks in your list:
+     ____________________________________________________________
+     ```
+
+  10. Command/input: `bye`
+
+     Expected output:
+
+     ```text
+     ____________________________________________________________
+     Bye. Hope to see you again soon!
+     ____________________________________________________________
+     ```
+
+### UI-014 — Reject invalid event ranges and duplicate tasks
+
+- Aim: Verify equal and reversed event endpoints are rejected, equivalent date formats cannot bypass duplicate detection, and failed additions preserve saved data.
+- Inputs, commands, and expected output:
+
+  1. Command/input: `event camp /from 2026-02-03 /to 2026-02-03`
+
+     Expected output:
+
+     ```text
+     ____________________________________________________________
+      I could not complete that command: An event's end must be after its start.
+     ____________________________________________________________
+     ```
+
+  2. Command/input: `event camp /from 2026-02-04 /to 2026-02-03`
+
+     Expected output:
+
+     ```text
+     ____________________________________________________________
+      I could not complete that command: An event's end must be after its start.
+     ____________________________________________________________
+     ```
+
+  3. Command/input: `event camp /from 2026-02-03 1000 /to 2026-02-03 0900`
+
+     Expected output:
+
+     ```text
+     ____________________________________________________________
+      I could not complete that command: An event's end must be after its start.
+     ____________________________________________________________
+     ```
+
+  4. Command/input: `event camp /from 2026-02-03 0900 /to 2026-02-03 0900`
+
+     Expected output:
+
+     ```text
+     ____________________________________________________________
+      I could not complete that command: An event's end must be after its start.
+     ____________________________________________________________
+     ```
+
+  5. Command/input: `event   camp   /from   2026-02-03   0900   /to   2026-02-03   1000`
+
+     Expected output:
+
+     ```text
+     ____________________________________________________________
+      Got it. I've added this task:
+        [E][ ] camp (from: Feb 03 2026 9:00 AM to: Feb 03 2026 10:00 AM)
+      Now you have 1 tasks in the list.
+     ____________________________________________________________
+     ```
+
+  6. Command/input: `mark 1`
+
+     Expected output:
+
+     ```text
+     ____________________________________________________________
+      Nice! I've marked this task as done:
+        [E][X] camp (from: Feb 03 2026 9:00 AM to: Feb 03 2026 10:00 AM)
+     ____________________________________________________________
+     ```
+
+  7. Command/input: `event CAMP /from 3/2/2026 0900 /to 3/2/2026 1000`
+
+     Expected output:
+
+     ```text
+     ____________________________________________________________
+      I could not complete that command: That task is already in your list.
+     ____________________________________________________________
+     ```
+
+     Expected `data/sumo.txt` content immediately after the command:
+
+     ```text
+     E | 1 | camp | 2026-02-03T09:00 | 2026-02-03T10:00
+     ```
+
+  8. Command/input: `todo camp`
+
+     Expected output:
+
+     ```text
+     ____________________________________________________________
+      Got it. I've added this task:
+        [T][ ] camp
+      Now you have 2 tasks in the list.
+     ____________________________________________________________
+     ```
+
+  9. Command/input: `todo   CAMP`
+
+     Expected output:
+
+     ```text
+     ____________________________________________________________
+      I could not complete that command: That task is already in your list.
+     ____________________________________________________________
+     ```
+
+     Expected `data/sumo.txt` content immediately after the command:
+
+     ```text
+     E | 1 | camp | 2026-02-03T09:00 | 2026-02-03T10:00
+     T | 0 | camp
+     ```
+
+  10. Command/input: `bye`
+
+     Expected output:
+
+     ```text
+     ____________________________________________________________
+     Bye. Hope to see you again soon!
+     ____________________________________________________________
+     ```
 
 ## Test-session records
 

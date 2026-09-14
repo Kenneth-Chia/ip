@@ -36,7 +36,7 @@ public class UiTest {
 
         assertEquals(List.of(
                 "____________________________________________________________",
-                "Bye. Hope to see you again soon!",
+                "Until next time. I'll be here when you need me.",
                 " I could not complete that command: bad command",
                 " I could not load your saved tasks: bad file",
                 " I could not load saved task on line 4: bad record",
@@ -50,8 +50,8 @@ public class UiTest {
 
         assertEquals(5, output.size());
         assertEquals("____________________________________________________________", output.get(0));
-        assertEquals("Hello! I'm Sumo.", output.get(2));
-        assertEquals("What can I do for you?", output.get(3));
+        assertEquals("My name is Sumo.", output.get(2));
+        assertEquals("I'm here to help you stay on task.", output.get(3));
         assertEquals("____________________________________________________________", output.get(4));
     }
 
@@ -108,10 +108,10 @@ public class UiTest {
         ui.showTaskDeleted(task, 0);
 
         assertEquals(List.of(
-                " Got it. I've added this task:", "   [D][ ] submit (by: Feb 03 2026)",
+                " Understood. I've added this task:", "   [D][ ] submit (by: Feb 03 2026)",
                 " Now you have 1 tasks in the list.",
-                " Nice! I've marked this task as done:", "   [D][X] submit (by: Feb 03 2026)",
-                " OK, I've marked this task as not done yet:", "   [D][ ] submit (by: Feb 03 2026)",
+                " Confirmed. Task completed:", "   [D][X] submit (by: Feb 03 2026)",
+                " Plans change. I've marked this task as incomplete:", "   [D][ ] submit (by: Feb 03 2026)",
                 " Noted. I've removed this task:", "   [D][ ] submit (by: Feb 03 2026)",
                 " Now you have 0 tasks in the list."), output);
     }

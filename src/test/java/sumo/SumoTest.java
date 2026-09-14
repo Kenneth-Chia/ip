@@ -23,7 +23,7 @@ class SumoTest {
         String addResponse = sumo.getResponse("todo read book");
         String listResponse = sumo.getResponse("list");
 
-        assertEquals("Got it. I've added this task:" + System.lineSeparator()
+        assertEquals("Understood. I've added this task:" + System.lineSeparator()
                 + "   [T][ ] read book" + System.lineSeparator()
                 + " Now you have 1 tasks in the list.", addResponse);
         assertEquals("Here are the tasks in your list:" + System.lineSeparator()
@@ -79,7 +79,7 @@ class SumoTest {
         Sumo sumo = createSumo();
 
         assertFalse(sumo.isExit());
-        assertEquals("Bye. Hope to see you again soon!", sumo.getResponse("bye"));
+        assertEquals("Until next time. I'll be here when you need me.", sumo.getResponse("bye"));
         assertTrue(sumo.isExit());
     }
 
@@ -113,7 +113,7 @@ class SumoTest {
             assertEquals(originalList, sumo.getResponse("list"));
             assertEquals("T | 0 | external edit", Files.readString(dataFile));
         }
-        assertEquals("Bye. Hope to see you again soon!", sumo.getResponse("bye"));
+        assertEquals("Until next time. I'll be here when you need me.", sumo.getResponse("bye"));
     }
 
     @Test
@@ -151,7 +151,7 @@ class SumoTest {
         assertEquals("I could not complete that command: Please enter a command.", sumo.getResponse(null));
         assertEquals("I could not complete that command: Please enter a command.", sumo.getResponse("   "));
         assertTrue(sumo.getResponse("todo first\nsecond").startsWith("I could not complete that command:"));
-        assertTrue(sumo.getResponse("todo valid").startsWith("Got it."));
+        assertTrue(sumo.getResponse("todo valid").startsWith("Understood."));
     }
 
     private Sumo createSumo() {

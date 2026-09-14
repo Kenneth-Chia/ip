@@ -4,8 +4,8 @@ Run `.\gradlew.bat run` from the repository root before each test case unless st
 
 ## GUI-001 — Send commands using the keyboard and button
 
-- Confirm the window title is `Sumo` and the initial Sumo dialog says `Hello! I'm Sumo.` followed by
-  `What can I do for you?`.
+- Confirm the window title is `Sumo` and the initial Sumo dialog says `My name is Sumo.` followed by
+  `I'm here to help you stay on task.`.
 - Enter `todo read book` and press **Enter**. Confirm a user dialog and Sumo's task-added response
   appear.
 - Enter `list` and click **Send**. Confirm a user dialog and a response containing the added task

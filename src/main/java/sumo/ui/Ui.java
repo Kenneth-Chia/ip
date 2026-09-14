@@ -60,8 +60,8 @@ public class Ui {
     public void showWelcome() {
         output.accept(SEPARATOR);
         output.accept(BANNER);
-        output.accept("Hello! I'm Sumo.");
-        output.accept("What can I do for you?");
+        output.accept("My name is Sumo.");
+        output.accept("I'm here to help you stay on task.");
         output.accept(SEPARATOR);
     }
 
@@ -72,7 +72,7 @@ public class Ui {
 
     /** Shows the farewell message. */
     public void showGoodbye() {
-        output.accept("Bye. Hope to see you again soon!");
+        output.accept("Until next time. I'll be here when you need me.");
     }
 
     /**
@@ -189,7 +189,7 @@ public class Ui {
      * @param taskCount number of tasks after the addition.
      */
     public void showTaskAdded(Task task, int taskCount) {
-        output.accept(" Got it. I've added this task:");
+        output.accept(" Understood. I've added this task:");
         output.accept("   " + task);
         output.accept(" Now you have " + taskCount + " tasks in the list.");
     }
@@ -200,7 +200,7 @@ public class Ui {
      * @param task task that was marked complete.
      */
     public void showTaskMarked(Task task) {
-        output.accept(" Nice! I've marked this task as done:");
+        output.accept(" Confirmed. Task completed:");
         output.accept("   " + task);
     }
 
@@ -210,7 +210,7 @@ public class Ui {
      * @param task task that was marked incomplete.
      */
     public void showTaskUnmarked(Task task) {
-        output.accept(" OK, I've marked this task as not done yet:");
+        output.accept(" Plans change. I've marked this task as incomplete:");
         output.accept("   " + task);
     }
 

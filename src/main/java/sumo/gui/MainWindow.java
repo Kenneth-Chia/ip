@@ -44,7 +44,7 @@ public class MainWindow extends AnchorPane {
     public void setSumo(Sumo sumo) {
         this.sumo = sumo;
         dialogContainer.getChildren().add(
-                DialogBox.getSumoDialog("Hello! I'm Sumo.\nWhat can I do for you?", sumoImage));
+                DialogBox.getSumoDialog("My name is Sumo.\nI'm here to help you stay on task.", sumoImage));
         if (!sumo.getStartupMessage().isEmpty()) {
             dialogContainer.getChildren().add(DialogBox.getSumoDialog(sumo.getStartupMessage(), sumoImage));
         }

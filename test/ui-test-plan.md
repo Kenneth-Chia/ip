@@ -29,7 +29,7 @@ The runner parses the numbered `Command/input` entries and their following fence
 
      ```text
      ____________________________________________________________
-      Got it. I've added this task:
+      Understood. I've added this task:
         [T][ ] read book
       Now you have 1 tasks in the list.
      ____________________________________________________________
@@ -52,7 +52,7 @@ The runner parses the numbered `Command/input` entries and their following fence
 
      ```text
      ____________________________________________________________
-     Bye. Hope to see you again soon!
+     Until next time. I'll be here when you need me.
      ____________________________________________________________
      ```
 
@@ -67,7 +67,7 @@ The runner parses the numbered `Command/input` entries and their following fence
 
      ```text
      ____________________________________________________________
-      Got it. I've added this task:
+      Understood. I've added this task:
         [T][ ] return book
       Now you have 1 tasks in the list.
      ____________________________________________________________
@@ -79,7 +79,7 @@ The runner parses the numbered `Command/input` entries and their following fence
 
      ```text
      ____________________________________________________________
-      Nice! I've marked this task as done:
+      Confirmed. Task completed:
         [T][X] return book
      ____________________________________________________________
      ```
@@ -90,7 +90,7 @@ The runner parses the numbered `Command/input` entries and their following fence
 
      ```text
      ____________________________________________________________
-      OK, I've marked this task as not done yet:
+      Plans change. I've marked this task as incomplete:
         [T][ ] return book
      ____________________________________________________________
      ```
@@ -101,7 +101,7 @@ The runner parses the numbered `Command/input` entries and their following fence
 
      ```text
      ____________________________________________________________
-     Bye. Hope to see you again soon!
+     Until next time. I'll be here when you need me.
      ____________________________________________________________
      ```
 
@@ -168,7 +168,7 @@ The runner parses the numbered `Command/input` entries and their following fence
 
      ```text
      ____________________________________________________________
-     Bye. Hope to see you again soon!
+     Until next time. I'll be here when you need me.
      ____________________________________________________________
      ```
 
@@ -183,7 +183,7 @@ The runner parses the numbered `Command/input` entries and their following fence
 
      ```text
      ____________________________________________________________
-      Got it. I've added this task:
+      Understood. I've added this task:
         [T][ ] read book
       Now you have 1 tasks in the list.
      ____________________________________________________________
@@ -195,7 +195,7 @@ The runner parses the numbered `Command/input` entries and their following fence
 
      ```text
      ____________________________________________________________
-      Got it. I've added this task:
+      Understood. I've added this task:
         [D][ ] return book (by: Jun 06 2019)
       Now you have 2 tasks in the list.
      ____________________________________________________________
@@ -230,7 +230,7 @@ The runner parses the numbered `Command/input` entries and their following fence
 
      ```text
      ____________________________________________________________
-     Bye. Hope to see you again soon!
+     Until next time. I'll be here when you need me.
      ____________________________________________________________
      ```
 
@@ -247,7 +247,7 @@ The runner parses the numbered `Command/input` entries and their following fence
 
      ```text
      ____________________________________________________________
-      Got it. I've added this task:
+      Understood. I've added this task:
         [T][ ] read book
       Now you have 1 tasks in the list.
      ____________________________________________________________
@@ -265,7 +265,7 @@ The runner parses the numbered `Command/input` entries and their following fence
 
      ```text
      ____________________________________________________________
-      Got it. I've added this task:
+      Understood. I've added this task:
         [D][ ] return book (by: Jun 06 2019)
       Now you have 2 tasks in the list.
      ____________________________________________________________
@@ -284,7 +284,7 @@ The runner parses the numbered `Command/input` entries and their following fence
 
      ```text
      ____________________________________________________________
-      Got it. I've added this task:
+      Understood. I've added this task:
         [E][ ] project meeting (from: Aug 06 2019 2:00 PM to: Aug 06 2019 4:00 PM)
       Now you have 3 tasks in the list.
      ____________________________________________________________
@@ -304,7 +304,7 @@ The runner parses the numbered `Command/input` entries and their following fence
 
      ```text
      ____________________________________________________________
-      Nice! I've marked this task as done:
+      Confirmed. Task completed:
         [T][X] read book
      ____________________________________________________________
      ```
@@ -323,7 +323,7 @@ The runner parses the numbered `Command/input` entries and their following fence
 
      ```text
      ____________________________________________________________
-      OK, I've marked this task as not done yet:
+      Plans change. I've marked this task as incomplete:
         [T][ ] read book
      ____________________________________________________________
      ```
@@ -361,7 +361,7 @@ The runner parses the numbered `Command/input` entries and their following fence
 
      ```text
      ____________________________________________________________
-     Bye. Hope to see you again soon!
+     Until next time. I'll be here when you need me.
      ____________________________________________________________
      ```
 
@@ -378,7 +378,7 @@ The runner parses the numbered `Command/input` entries and their following fence
 
      ```text
      ____________________________________________________________
-      Got it. I've added this task:
+      Understood. I've added this task:
         [T][ ] read book
       Now you have 1 tasks in the list.
      ____________________________________________________________
@@ -390,7 +390,7 @@ The runner parses the numbered `Command/input` entries and their following fence
 
      ```text
      ____________________________________________________________
-      Got it. I've added this task:
+      Understood. I've added this task:
         [D][ ] return book (by: Jun 06 2019)
       Now you have 2 tasks in the list.
      ____________________________________________________________
@@ -402,7 +402,7 @@ The runner parses the numbered `Command/input` entries and their following fence
 
      ```text
      ____________________________________________________________
-      Got it. I've added this task:
+      Understood. I've added this task:
         [E][ ] project meeting (from: Aug 06 2019 2:00 PM to: Aug 06 2019 4:00 PM)
       Now you have 3 tasks in the list.
      ____________________________________________________________
@@ -414,7 +414,7 @@ The runner parses the numbered `Command/input` entries and their following fence
 
      ```text
      ____________________________________________________________
-      Nice! I've marked this task as done:
+      Confirmed. Task completed:
         [D][X] return book (by: Jun 06 2019)
      ____________________________________________________________
      ```
@@ -425,7 +425,7 @@ The runner parses the numbered `Command/input` entries and their following fence
 
      ```text
      ____________________________________________________________
-     Bye. Hope to see you again soon!
+     Until next time. I'll be here when you need me.
      ____________________________________________________________
      ```
 
@@ -450,7 +450,7 @@ The runner parses the numbered `Command/input` entries and their following fence
 
      ```text
      ____________________________________________________________
-     Bye. Hope to see you again soon!
+     Until next time. I'll be here when you need me.
      ____________________________________________________________
      ```
 
@@ -478,7 +478,7 @@ The runner parses the numbered `Command/input` entries and their following fence
 
      ```text
      ____________________________________________________________
-     Bye. Hope to see you again soon!
+     Until next time. I'll be here when you need me.
      ____________________________________________________________
      ```
 
@@ -495,7 +495,7 @@ The runner parses the numbered `Command/input` entries and their following fence
 
      ```text
      ____________________________________________________________
-      Got it. I've added this task:
+      Understood. I've added this task:
         [D][ ] return book (by: Dec 02 2019 6:00 PM)
       Now you have 1 tasks in the list.
      ____________________________________________________________
@@ -507,7 +507,7 @@ The runner parses the numbered `Command/input` entries and their following fence
 
      ```text
      ____________________________________________________________
-      Got it. I've added this task:
+      Understood. I've added this task:
         [D][ ] submit report (by: Oct 15 2019)
       Now you have 2 tasks in the list.
      ____________________________________________________________
@@ -531,7 +531,7 @@ The runner parses the numbered `Command/input` entries and their following fence
 
      ```text
      ____________________________________________________________
-     Bye. Hope to see you again soon!
+     Until next time. I'll be here when you need me.
      ____________________________________________________________
      ```
 
@@ -548,7 +548,7 @@ The runner parses the numbered `Command/input` entries and their following fence
 
      ```text
      ____________________________________________________________
-      Got it. I've added this task:
+      Understood. I've added this task:
         [T][ ] read book
       Now you have 1 tasks in the list.
      ____________________________________________________________
@@ -560,7 +560,7 @@ The runner parses the numbered `Command/input` entries and their following fence
 
      ```text
      ____________________________________________________________
-      Got it. I've added this task:
+      Understood. I've added this task:
         [D][ ] return book (by: Oct 15 2019)
       Now you have 2 tasks in the list.
      ____________________________________________________________
@@ -572,7 +572,7 @@ The runner parses the numbered `Command/input` entries and their following fence
 
      ```text
      ____________________________________________________________
-      Got it. I've added this task:
+      Understood. I've added this task:
         [E][ ] project meeting (from: Oct 14 2019 9:00 AM to: Oct 16 2019 5:00 PM)
       Now you have 3 tasks in the list.
      ____________________________________________________________
@@ -618,7 +618,7 @@ The runner parses the numbered `Command/input` entries and their following fence
 
      ```text
      ____________________________________________________________
-     Bye. Hope to see you again soon!
+     Until next time. I'll be here when you need me.
      ____________________________________________________________
      ```
 
@@ -635,7 +635,7 @@ The runner parses the numbered `Command/input` entries and their following fence
 
      ```text
      ____________________________________________________________
-      Got it. I've added this task:
+      Understood. I've added this task:
         [T][ ] read book
       Now you have 1 tasks in the list.
      ____________________________________________________________
@@ -647,7 +647,7 @@ The runner parses the numbered `Command/input` entries and their following fence
 
      ```text
      ____________________________________________________________
-      Got it. I've added this task:
+      Understood. I've added this task:
         [D][ ] return book (by: Jun 06 2019)
       Now you have 2 tasks in the list.
      ____________________________________________________________
@@ -659,7 +659,7 @@ The runner parses the numbered `Command/input` entries and their following fence
 
      ```text
      ____________________________________________________________
-      Got it. I've added this task:
+      Understood. I've added this task:
         [T][ ] write notes
       Now you have 3 tasks in the list.
      ____________________________________________________________
@@ -671,7 +671,7 @@ The runner parses the numbered `Command/input` entries and their following fence
 
      ```text
      ____________________________________________________________
-      Nice! I've marked this task as done:
+      Confirmed. Task completed:
         [D][X] return book (by: Jun 06 2019)
      ____________________________________________________________
      ```
@@ -714,7 +714,7 @@ The runner parses the numbered `Command/input` entries and their following fence
 
      ```text
      ____________________________________________________________
-     Bye. Hope to see you again soon!
+     Until next time. I'll be here when you need me.
      ____________________________________________________________
      ```
 
@@ -733,7 +733,7 @@ The runner parses the numbered `Command/input` entries and their following fence
 
      ```text
      ____________________________________________________________
-      Got it. I've added this task:
+      Understood. I've added this task:
         [T][ ] buy groceries
       Now you have 1 tasks in the list.
      ____________________________________________________________
@@ -745,7 +745,7 @@ The runner parses the numbered `Command/input` entries and their following fence
 
      ```text
      ____________________________________________________________
-      Got it. I've added this task:
+      Understood. I've added this task:
         [D][ ] submit report (by: Feb 09 2026)
       Now you have 2 tasks in the list.
      ____________________________________________________________
@@ -757,7 +757,7 @@ The runner parses the numbered `Command/input` entries and their following fence
 
      ```text
      ____________________________________________________________
-      Got it. I've added this task:
+      Understood. I've added this task:
         [E][ ] meeting (from: Feb 03 2026 to: Feb 10 2026)
       Now you have 3 tasks in the list.
      ____________________________________________________________
@@ -769,7 +769,7 @@ The runner parses the numbered `Command/input` entries and their following fence
 
      ```text
      ____________________________________________________________
-      Nice! I've marked this task as done:
+      Confirmed. Task completed:
         [D][X] submit report (by: Feb 09 2026)
      ____________________________________________________________
      ```
@@ -819,7 +819,7 @@ The runner parses the numbered `Command/input` entries and their following fence
 
      ```text
      ____________________________________________________________
-     Bye. Hope to see you again soon!
+     Until next time. I'll be here when you need me.
      ____________________________________________________________
      ```
 
@@ -836,7 +836,7 @@ The runner parses the numbered `Command/input` entries and their following fence
 
      ```text
      ____________________________________________________________
-      Got it. I've added this task:
+      Understood. I've added this task:
         [T][ ] read book
       Now you have 1 tasks in the list.
      ____________________________________________________________
@@ -854,7 +854,7 @@ The runner parses the numbered `Command/input` entries and their following fence
 
      ```text
      ____________________________________________________________
-      Nice! I've marked this task as done:
+      Confirmed. Task completed:
         [T][X] read book
      ____________________________________________________________
      ```
@@ -942,7 +942,7 @@ The runner parses the numbered `Command/input` entries and their following fence
 
      ```text
      ____________________________________________________________
-     Bye. Hope to see you again soon!
+     Until next time. I'll be here when you need me.
      ____________________________________________________________
      ```
 
@@ -1047,7 +1047,7 @@ The runner parses the numbered `Command/input` entries and their following fence
 
      ```text
      ____________________________________________________________
-     Bye. Hope to see you again soon!
+     Until next time. I'll be here when you need me.
      ____________________________________________________________
      ```
 
@@ -1102,7 +1102,7 @@ The runner parses the numbered `Command/input` entries and their following fence
 
      ```text
      ____________________________________________________________
-      Got it. I've added this task:
+      Understood. I've added this task:
         [E][ ] camp (from: Feb 03 2026 9:00 AM to: Feb 03 2026 10:00 AM)
       Now you have 1 tasks in the list.
      ____________________________________________________________
@@ -1114,7 +1114,7 @@ The runner parses the numbered `Command/input` entries and their following fence
 
      ```text
      ____________________________________________________________
-      Nice! I've marked this task as done:
+      Confirmed. Task completed:
         [E][X] camp (from: Feb 03 2026 9:00 AM to: Feb 03 2026 10:00 AM)
      ____________________________________________________________
      ```
@@ -1141,7 +1141,7 @@ The runner parses the numbered `Command/input` entries and their following fence
 
      ```text
      ____________________________________________________________
-      Got it. I've added this task:
+      Understood. I've added this task:
         [T][ ] camp
       Now you have 2 tasks in the list.
      ____________________________________________________________
@@ -1170,7 +1170,7 @@ The runner parses the numbered `Command/input` entries and their following fence
 
      ```text
      ____________________________________________________________
-     Bye. Hope to see you again soon!
+     Until next time. I'll be here when you need me.
      ____________________________________________________________
      ```
 

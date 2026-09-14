@@ -35,6 +35,20 @@ change before completing the task.
 
 Ensure that Java 25 is used when running the application or build tasks. On macOS, use `sdk use java 25.0.3.fx-zulu` to switch to Java 25 if needed.
 
+## Gradle cache on Windows
+
+When Codex runs Gradle on Windows, use the normal user-level Gradle cache instead of a
+workspace-local cache. Set `GRADLE_USER_HOME` in the same PowerShell session before running
+any Gradle task:
+
+```powershell
+$env:GRADLE_USER_HOME = "$env:USERPROFILE\.gradle"
+.\gradlew.bat <tasks>
+```
+
+Do not use a `.gradle-user` directory inside the repository. In the Codex sandbox, files in
+that directory can receive permissions that cause Java to fail while reading cached JAR files.
+
 ## JUnit test coverage after code updates:
 
 Focus JUnit tests on approximately the top 50% highest-value methods in the codebase, prioritizing methods that contain complex logic, implement core application behavior, or are critical to correctness. After every code change, reassess the affected code and update or add JUnit tests as needed to continue meeting this coverage target. Do not change expected behavior merely to make a failing test pass.

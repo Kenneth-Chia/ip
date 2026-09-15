@@ -15,13 +15,13 @@
          xmlns:fx="http://javafx.com/fxml/1">
     <children>
         <Label fx:id="dialog"
-               maxWidth="290.0"
+               styleClass="dialog-bubble"
                minHeight="-Infinity"
                text="Label"
                wrapText="true" />
         <ImageView fx:id="displayPicture"
-                   fitHeight="64.0"
-                   fitWidth="64.0"
+                   fitHeight="36.0"
+                   fitWidth="36.0"
                    pickOnBounds="true"
                    preserveRatio="true" />
     </children>

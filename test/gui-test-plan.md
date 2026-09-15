@@ -22,6 +22,10 @@ Confirm it starts and accepts commands, with blank avatar areas beside the dialo
 Enter enough valid commands to exceed the visible dialog area. Confirm that the scroll pane moves to
 show the newest dialog after each response is added.
 
+Scroll up and down with the mouse wheel or trackpad. Confirm scrolling moves slightly faster
+and stops at both ends without jumping. Confirm the scrollbar can still be dragged normally,
+and scrolling a conversation shorter than the viewport does not move it.
+
 ## GUI-004 — Show saved-data warnings and preserve rejected records
 
 Back up `data/sumo.txt`, then put a valid record followed by an invalid record in the file:
@@ -29,3 +33,16 @@ Back up `data/sumo.txt`, then put a valid record followed by an invalid record i
 shows a warning about line 2 and says saving is disabled. Send `list` and confirm the valid task appears.
 Send `delete 1` and confirm a saving error appears; `list` must still show the task and the original
 file must remain unchanged. Close Sumo and restore the backup after this check.
+
+## GUI-005 — Android theme, resizing, and keyboard access
+
+- Confirm a slate background, cyan triangle, SUMO header, and blue ring with the text Ready.
+- Confirm assistant bubbles have a cyan top border and user bubbles align right.
+- Resize from the minimum 400 × 600 window to a larger window. Send a long task description
+  and confirm bubbles wrap, the composer stays visible, and no horizontal scrolling is needed.
+- Use Tab to reach the command field and Send button; confirm visible focus indicators.
+- Send a command with the button and confirm focus returns to the command field.
+- Confirm the command examples remain readable and Enter still submits.
+- Send bye and confirm the ring becomes gray, the status reads Session ended, and both
+  input controls are disabled. The farewell must remain readable.
+- Confirm the theme works offline and has no animation or flashing.

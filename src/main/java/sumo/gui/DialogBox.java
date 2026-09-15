@@ -41,9 +41,9 @@ public class DialogBox extends HBox {
     /**
      * Creates a dialog aligned for a user message.
      *
-     * @param text message to display
-     * @param image user's avatar, or {@code null} if it is not available
-     * @return user dialog box
+     * @param text message to display.
+     * @param image user's avatar, or {@code null} if it is not available.
+     * @return user dialog box.
      */
     public static DialogBox getUserDialog(String text, Image image) {
         return new DialogBox(text, image);
@@ -52,9 +52,9 @@ public class DialogBox extends HBox {
     /**
      * Creates a dialog aligned for a Sumo response.
      *
-     * @param text message to display
-     * @param image Sumo's avatar, or {@code null} if it is not available
-     * @return Sumo dialog box
+     * @param text message to display.
+     * @param image Sumo's avatar, or {@code null} if it is not available.
+     * @return Sumo dialog box.
      */
     public static DialogBox getSumoDialog(String text, Image image) {
         DialogBox dialogBox = new DialogBox(text, image);

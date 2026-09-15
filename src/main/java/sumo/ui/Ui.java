@@ -143,7 +143,11 @@ public class Ui {
         showNumberedTasks(tasks);
     }
 
-    /** Shows all tasks in the temporary chronological view. */
+    /**
+     * Shows all tasks in the temporary chronological view.
+     *
+     * @param tasks tasks sorted by completion status and date.
+     */
     public void showSortedTaskList(List<Task> tasks) {
         output.accept(" Here are your tasks sorted chronologically (ascending):");
         showSortedTaskGroups(tasks);

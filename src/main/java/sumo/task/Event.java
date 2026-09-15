@@ -90,6 +90,7 @@ public class Event extends Task {
         return to;
     }
 
+    /** Returns whether another event has the same description and both endpoints. */
     @Override
     public boolean hasSameDetails(Task other) {
         return super.hasSameDetails(other) && from.equals(((Event) other).from)

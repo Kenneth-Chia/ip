@@ -10,7 +10,7 @@ public class Todo extends Task {
     /**
      * Creates a new incomplete todo with the given description.
      *
-     * @param description the todo text
+     * @param description the todo text.
      */
     public Todo(String description) {
         super(description);
@@ -19,7 +19,7 @@ public class Todo extends Task {
     /**
      * Returns the type icon used when displaying this task.
      *
-     * @return the todo type icon
+     * @return the todo type icon.
      */
     @Override
     public String getTypeIcon() {
@@ -29,7 +29,7 @@ public class Todo extends Task {
     /**
      * Returns this todo in the format used by Sumo's task list.
      *
-     * @return the formatted todo
+     * @return the formatted todo.
      */
     @Override
     public String toString() {

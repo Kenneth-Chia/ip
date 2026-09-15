@@ -63,6 +63,7 @@ public class UiTestRunner {
         new UiTestRunner(repositoryRoot, shouldShowOutput).run();
     }
 
+    /** Compiles the application and executes the test cases in plan order. */
     private void run() throws Exception {
         String plan = normalizeLineEndings(Files.readString(resolvePath("test/ui-test-plan.md")));
         int recordsHeading = plan.indexOf("## Test-session records");
@@ -93,6 +94,7 @@ public class UiTestRunner {
                 testCases.size(), elapsedSeconds(suiteStart));
     }
 
+    /** Checks that the selected Java runtime matches the version required by the plan. */
     private void confirmJavaVersion(String requiredVersion) throws Exception {
         Process process = new ProcessBuilder("java", "-version")
                 .redirectErrorStream(true)
@@ -106,13 +108,10 @@ public class UiTestRunner {
         System.out.printf("$ java -version -- Java %s confirmed%n", requiredVersion);
     }
 
+    /** Runs one isolated test case and stops at the first output or file mismatch. */
     private void runTestCase(UiTestCase testCase, String launchCommand) throws Exception {
         System.out.printf("Starting %s -- %s%n", testCase.id(), testCase.name());
-        if (testCase.shouldRemoveDataDirectory()) {
-            deleteRecursively(resolvePath("data"));
-        } else {
-            Files.deleteIfExists(resolvePath("data/sumo.txt"));
-        }
+        prepareTestData(testCase);
 
         long caseStart = System.nanoTime();
         int currentSession = 0;
@@ -122,30 +121,11 @@ public class UiTestRunner {
                 if (step.session() != currentSession) {
                     stopProgram(program);
                     program = startProgram(launchCommand);
-                    String startupOutput = readOutputBlock(program);
-                    if (shouldShowOutput) {
-                        System.out.println(startupOutput);
-                    }
+                    showOutputIfRequested(readOutputBlock(program));
                     currentSession = step.session();
                 }
 
-                if (step.command().isEmpty()) {
-                    throw new IllegalArgumentException(testCase.id() + " contains an empty command.");
-                }
-                program.input().write(step.command());
-                program.input().newLine();
-                program.input().flush();
-                String actualOutput = readOutputBlock(program);
-                if (!actualOutput.equals(step.expectedOutput())) {
-                    throw new AssertionError(testCase.id() + " failed at > " + step.command()
-                            + "\nActual output:\n" + actualOutput
-                            + "\nExpected output:\n" + step.expectedOutput());
-                }
-
-                System.out.printf("%s > %s -- PASS%n", testCase.id(), step.command());
-                if (shouldShowOutput) {
-                    System.out.println(actualOutput);
-                }
+                runCommandStep(testCase, step, program);
                 assertFileIfRequired(testCase, step);
             }
 
@@ -158,6 +138,41 @@ public class UiTestRunner {
         System.out.printf("%s passed in %.2f s.%n", testCase.id(), elapsedSeconds(caseStart));
     }
 
+    /** Clears saved test data according to the case's isolation requirements. */
+    private void prepareTestData(UiTestCase testCase) throws IOException {
+        if (testCase.shouldRemoveDataDirectory()) {
+            deleteRecursively(resolvePath("data"));
+        } else {
+            Files.deleteIfExists(resolvePath("data/sumo.txt"));
+        }
+    }
+
+    /** Sends one command and compares its complete response before the next step. */
+    private void runCommandStep(UiTestCase testCase, TestStep step, RunningProgram program) throws IOException {
+        if (step.command().isEmpty()) {
+            throw new IllegalArgumentException(testCase.id() + " contains an empty command.");
+        }
+        program.input().write(step.command());
+        program.input().newLine();
+        program.input().flush();
+        String actualOutput = readOutputBlock(program);
+        if (!actualOutput.equals(step.expectedOutput())) {
+            throw new AssertionError(testCase.id() + " failed at > " + step.command()
+                    + "\nActual output:\n" + actualOutput
+                    + "\nExpected output:\n" + step.expectedOutput());
+        }
+        System.out.printf("%s > %s -- PASS%n", testCase.id(), step.command());
+        showOutputIfRequested(actualOutput);
+    }
+
+    /** Prints captured application output when a full transcript is requested. */
+    private void showOutputIfRequested(String output) {
+        if (shouldShowOutput) {
+            System.out.println(output);
+        }
+    }
+
+    /** Compares persisted file contents with the optional assertion for a step. */
     private void assertFileIfRequired(UiTestCase testCase, TestStep step) throws IOException {
         if (step.filePath() == null) {
             return;
@@ -177,6 +192,7 @@ public class UiTestRunner {
         System.out.printf("%s $ read %s -- PASS%n", testCase.id(), step.filePath());
     }
 
+    /** Starts an application session with UTF-8 input and output streams. */
     private RunningProgram startProgram(String launchCommand) throws IOException {
         Process process = new ProcessBuilder(splitCommand(launchCommand))
                 .directory(repositoryRoot.toFile())
@@ -188,6 +204,7 @@ public class UiTestRunner {
                 process.outputWriter(StandardCharsets.UTF_8));
     }
 
+    /** Reads one complete response, including its opening and closing separators. */
     private String readOutputBlock(RunningProgram program) throws IOException {
         List<String> lines = new ArrayList<>();
         int separatorCount = 0;
@@ -206,6 +223,7 @@ public class UiTestRunner {
         return String.join("\n", lines);
     }
 
+    /** Closes input and terminates a session, waiting for its process to exit. */
     private void stopProgram(RunningProgram program) throws InterruptedException, IOException {
         if (program == null) {
             return;
@@ -220,6 +238,7 @@ public class UiTestRunner {
         program.process().waitFor();
     }
 
+    /** Runs a plan command and rejects a nonzero exit status. */
     private void runDocumentedCommand(String command) throws Exception {
         Process process = new ProcessBuilder(splitCommand(command))
                 .directory(repositoryRoot.toFile())
@@ -232,50 +251,57 @@ public class UiTestRunner {
         }
     }
 
+    /** Parses test cases, session boundaries, expected responses, and file assertions. */
     private List<UiTestCase> getTestCases(String markdown) {
         List<UiTestCase> testCases = new ArrayList<>();
         Matcher caseMatcher = CASE_PATTERN.matcher(markdown);
         while (caseMatcher.find()) {
             String body = caseMatcher.group("body");
-            int secondSessionPosition = body.indexOf("- Second session inputs");
-            List<MatcherResult> commands = findCommands(body);
-            if (commands.isEmpty()) {
-                throw new IllegalArgumentException(caseMatcher.group("id") + " does not contain any command inputs.");
-            }
-
-            List<TestStep> steps = new ArrayList<>();
-            for (int index = 0; index < commands.size(); index++) {
-                MatcherResult command = commands.get(index);
-                int sectionStart = command.end();
-                int sectionEnd = index + 1 < commands.size() ? commands.get(index + 1).start() : body.length();
-                String section = body.substring(sectionStart, sectionEnd);
-                Matcher outputMatcher = OUTPUT_PATTERN.matcher(section);
-                if (!outputMatcher.find()) {
-                    throw new IllegalArgumentException(caseMatcher.group("id")
-                            + " has no expected output for '" + command.command() + "'.");
-                }
-
-                Matcher fileMatcher = FILE_PATTERN.matcher(section);
-                boolean hasFileAssertion = fileMatcher.find();
-                int session = secondSessionPosition >= 0 && command.start() > secondSessionPosition ? 2 : 1;
-                steps.add(new TestStep(
-                        command.command(),
-                        removeMarkdownIndent(outputMatcher.group("content")),
-                        session,
-                        hasFileAssertion ? fileMatcher.group("path") : null,
-                        hasFileAssertion ? removeMarkdownIndent(fileMatcher.group("content")) : null));
-            }
-
             testCases.add(new UiTestCase(
                     caseMatcher.group("id"),
                     caseMatcher.group("name"),
-                    List.copyOf(steps),
+                    getTestSteps(caseMatcher.group("id"), body),
                     body.contains("delete the `data` directory recursively if it exists"),
                     body.contains("Confirm that `data` exists after startup")));
         }
         return testCases;
     }
 
+    /** Parses a case's commands and assigns each step to its documented session. */
+    private List<TestStep> getTestSteps(String caseId, String body) {
+        int secondSessionPosition = body.indexOf("- Second session inputs");
+        List<MatcherResult> commands = findCommands(body);
+        if (commands.isEmpty()) {
+            throw new IllegalArgumentException(caseId + " does not contain any command inputs.");
+        }
+        List<TestStep> steps = new ArrayList<>();
+        for (int index = 0; index < commands.size(); index++) {
+            MatcherResult command = commands.get(index);
+            int sectionEnd = index + 1 < commands.size() ? commands.get(index + 1).start() : body.length();
+            String section = body.substring(command.end(), sectionEnd);
+            int session = secondSessionPosition >= 0 && command.start() > secondSessionPosition ? 2 : 1;
+            steps.add(parseTestStep(caseId, command.command(), section, session));
+        }
+        return List.copyOf(steps);
+    }
+
+    /** Parses the required response and optional file assertion for one command. */
+    private TestStep parseTestStep(String caseId, String command, String section, int session) {
+        Matcher outputMatcher = OUTPUT_PATTERN.matcher(section);
+        if (!outputMatcher.find()) {
+            throw new IllegalArgumentException(caseId + " has no expected output for '" + command + "'.");
+        }
+        Matcher fileMatcher = FILE_PATTERN.matcher(section);
+        boolean hasFileAssertion = fileMatcher.find();
+        return new TestStep(
+                command,
+                removeMarkdownIndent(outputMatcher.group("content")),
+                session,
+                hasFileAssertion ? fileMatcher.group("path") : null,
+                hasFileAssertion ? removeMarkdownIndent(fileMatcher.group("content")) : null);
+    }
+
+    /** Finds command inputs and their positions within a test case. */
     private List<MatcherResult> findCommands(String body) {
         List<MatcherResult> commands = new ArrayList<>();
         Matcher matcher = COMMAND_PATTERN.matcher(body);
@@ -285,6 +311,7 @@ public class UiTestRunner {
         return commands;
     }
 
+    /** Reads the required Java version from the plan. */
     private String getRequiredJavaVersion(String markdown) {
         Matcher matcher = Pattern.compile("(?m)^- Java version: (?<version>\\d+)\\s*$").matcher(markdown);
         if (!matcher.find()) {
@@ -293,6 +320,7 @@ public class UiTestRunner {
         return matcher.group("version");
     }
 
+    /** Reads the command associated with a required plan label. */
     private String getInlineCommand(String markdown, String label) {
         Pattern pattern = Pattern.compile("(?m)^- " + Pattern.quote(label) + ": `(?<command>[^`]+)`$");
         Matcher matcher = pattern.matcher(markdown);
@@ -302,6 +330,7 @@ public class UiTestRunner {
         return matcher.group("command");
     }
 
+    /** Splits an unquoted command into arguments and rejects unsupported quoting. */
     private List<String> splitCommand(String command) {
         if (command.contains("\"") || command.contains("'")) {
             throw new IllegalArgumentException(
@@ -310,6 +339,7 @@ public class UiTestRunner {
         return List.of(command.trim().split("\\s+"));
     }
 
+    /** Resolves a plan path relative to the repository using either path separator. */
     private Path resolvePath(String relativePath) {
         Path resolvedPath = repositoryRoot;
         for (String segment : relativePath.split("[/\\\\]")) {
@@ -320,6 +350,7 @@ public class UiTestRunner {
         return resolvedPath.normalize();
     }
 
+    /** Deletes a test directory and its contents, visiting children before parents. */
     private void deleteRecursively(Path path) throws IOException {
         if (!Files.exists(path)) {
             return;
@@ -331,12 +362,14 @@ public class UiTestRunner {
         }
     }
 
+    /** Reads and closes the standard output stream of a process. */
     private String readAllOutput(Process process) throws IOException {
         try (BufferedReader reader = process.inputReader(StandardCharsets.UTF_8)) {
             return reader.lines().reduce("", (left, right) -> left + right + "\n");
         }
     }
 
+    /** Removes shared Markdown indentation while preserving relative output spacing. */
     private String removeMarkdownIndent(String text) {
         String[] lines = normalizeLineEndings(text).split("\n", -1);
         int minimumIndent = Integer.MAX_VALUE;
@@ -356,30 +389,37 @@ public class UiTestRunner {
         return trimTrailingNewlines(String.join("\n", adjustedLines));
     }
 
+    /** Converts Windows line endings to the line endings used for comparison. */
     private String normalizeLineEndings(String text) {
         return text.replace("\r\n", "\n");
     }
 
+    /** Removes trailing newline characters from a comparison value. */
     private String trimTrailingNewlines(String text) {
         return text.replaceFirst("\\n+$", "");
     }
 
+    /** Returns the elapsed seconds since a monotonic start timestamp. */
     private double elapsedSeconds(long startTime) {
         return (System.nanoTime() - startTime) / 1_000_000_000.0;
     }
 
+    /** Holds a test case and its required data-directory setup. */
     private record UiTestCase(String id, String name, List<TestStep> steps,
-                              boolean shouldRemoveDataDirectory, boolean shouldRequireDataDirectory) {
+            boolean shouldRemoveDataDirectory, boolean shouldRequireDataDirectory) {
     }
 
+    /** Holds one command, expected response, session number, and optional file assertion. */
     private record TestStep(String command, String expectedOutput, int session,
-                            String filePath, String expectedFile) {
+            String filePath, String expectedFile) {
     }
 
+    /** Retains a command and its source positions in the Markdown plan. */
     private record MatcherResult(int start, int end, String command) {
     }
 
+    /** Groups an application process with its input and output streams. */
     private record RunningProgram(Process process, BufferedReader output, BufferedReader error,
-                                  BufferedWriter input) {
+            BufferedWriter input) {
     }
 }

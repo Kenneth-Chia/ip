@@ -163,7 +163,7 @@ public class Storage {
         return Files.readAllLines(dataFile, StandardCharsets.UTF_8);
     }
 
-    /** @return the directory containing the configured data file */
+    /** Returns the directory containing the configured data file. */
     private Path getDataDirectory() {
         Path parent = dataFile.getParent();
         return parent == null ? Path.of(".") : parent;

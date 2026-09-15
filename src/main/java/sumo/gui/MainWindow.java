@@ -4,17 +4,21 @@ import java.net.URL;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
+import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.shape.Circle;
 import sumo.Sumo;
 
 /** Controls Sumo's main chat window. */
 public class MainWindow extends AnchorPane {
-    private static final String USER_IMAGE_PATH = "/images/DaUser.png";
-    private static final String SUMO_IMAGE_PATH = "/images/DaSumo.png";
+    private static final String USER_IMAGE_PATH = "/images/UserPfp.png";
+    private static final String SUMO_IMAGE_PATH = "/images/SumoPfp.png";
+    private static final double SCROLL_SPEED_MULTIPLIER = 1.3;
 
     private final Image userImage = loadImage(USER_IMAGE_PATH);
     private final Image sumoImage = loadImage(SUMO_IMAGE_PATH);
@@ -27,6 +31,10 @@ public class MainWindow extends AnchorPane {
     private TextField userInput;
     @FXML
     private Button sendButton;
+    @FXML
+    private Label sessionStatus;
+    @FXML
+    private Circle statusRing;
 
     private Sumo sumo;
 
@@ -34,6 +42,19 @@ public class MainWindow extends AnchorPane {
     @FXML
     public void initialize() {
         dialogContainer.heightProperty().addListener(observable -> scrollPane.setVvalue(1.0));
+        scrollPane.addEventFilter(ScrollEvent.SCROLL, this::handleScroll);
+    }
+
+    /** Moves wheel and trackpad scrolling slightly farther, while keeping it within the conversation. */
+    private void handleScroll(ScrollEvent event) {
+        double scrollableHeight = dialogContainer.getHeight() - scrollPane.getViewportBounds().getHeight();
+        if (scrollableHeight <= 0 || event.getDeltaY() == 0 || event.isControlDown()) {
+            return;
+        }
+        double position = scrollPane.getVvalue() - event.getDeltaY() * SCROLL_SPEED_MULTIPLIER
+                / scrollableHeight * (scrollPane.getVmax() - scrollPane.getVmin());
+        scrollPane.setVvalue(Math.clamp(position, scrollPane.getVmin(), scrollPane.getVmax()));
+        event.consume();
     }
 
     /**
@@ -63,10 +84,13 @@ public class MainWindow extends AnchorPane {
                 DialogBox.getUserDialog(input, userImage),
                 DialogBox.getSumoDialog(response, sumoImage));
         userInput.clear();
+        userInput.requestFocus();
 
         if (sumo.isExit()) {
             userInput.setDisable(true);
             sendButton.setDisable(true);
+            sessionStatus.setText("Session ended");
+            statusRing.getStyleClass().add("ended");
         }
     }
 

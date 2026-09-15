@@ -34,6 +34,7 @@ public class DialogBox extends HBox {
         }
 
         dialog.setText(text);
+        dialog.maxWidthProperty().bind(widthProperty().subtract(82).multiply(0.85));
         displayPicture.setImage(image);
     }
 
@@ -57,6 +58,7 @@ public class DialogBox extends HBox {
      */
     public static DialogBox getSumoDialog(String text, Image image) {
         DialogBox dialogBox = new DialogBox(text, image);
+        dialogBox.getStyleClass().add("assistant-dialog");
         dialogBox.flip();
         return dialogBox;
     }

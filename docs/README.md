@@ -1,16 +1,55 @@
 # Sumo User Guide
 
-Sumo is a task manager you chat with. Track todos, deadlines, and events with short commands,
-and pick up where you left off with automatically saved tasks.
+Keep assignments, errands, and appointments in one conversation. Sumo lets you add tasks,
+check what's coming up, and mark work complete by typing short commands. Your task list is
+saved automatically, ready for your next session.
+
+![Sumo chat window showing a task list and a chronological view](Ui.png)
+
+## In this guide
+
+- [Getting started](#getting-started)
+- [Command basics](#command-basics)
+- [Features](#features)
+- [Saving your tasks](#saving-your-tasks)
+- [Troubleshooting](#troubleshooting)
+- [Command reference](#command-reference)
 
 ## Getting started
 
-1. Install **JDK 25** and follow the [project setup instructions](../README.md#setting-up-in-intellij).
-2. Run `sumo.Launcher.main()` in IntelliJ to open the chat window.
-3. Type `todo read a book`, then press **Enter** or click **Send**.
-4. Try `list` to see your tasks, then `mark 1` to complete your first task.
+1. Install **Java 25**. Open a terminal (PowerShell on Windows, or Terminal on macOS/Linux)
+   and check that it uses version 25:
 
-Prefer the console? Run `sumo.Sumo.main()` in IntelliJ. The commands below work in both interfaces.
+   ```shell
+   java -version
+   ```
+
+2. Download **Sumo.jar** from the Assets section of the
+   [latest Sumo release](https://github.com/Kenneth-Chia/ip/releases/latest).
+   Choose the `.jar` file rather than the source code ZIP or TAR.GZ.
+3. Put the JAR in a folder where you want to keep Sumo and its task data. You must be able
+   to create and edit files in this folder.
+4. Open a terminal in that folder and launch the app:
+
+   ```shell
+   java -jar Sumo.jar
+   ```
+
+   If you saved the download under another name, replace `Sumo.jar` with that filename.
+   The Sumo chat window shown above should open. The release JAR bundles the app's dependencies;
+   you do not need IntelliJ or Gradle to use it.
+5. Type the following commands into the box at the bottom of the **Sumo window**, one at a time.
+   Press **Enter** or click **Send** after each command:
+
+   ```text
+   todo read a book
+   deadline submit report /by 2026-09-20 1700
+   list
+   mark 1
+   ```
+
+On a fresh task list, this creates two tasks and marks `read a book` complete.
+For later sessions, run the same launch command from the same folder to reload your tasks.
 
 ## Command basics
 
@@ -34,7 +73,13 @@ Use a todo for something without a date.
 todo read a book
 ```
 
-Sumo adds an incomplete task and shows the new task count.
+Sumo adds an incomplete task and shows the new task count. If this is your first task, the reply is:
+
+```text
+Understood. I've added this task:
+  [T][ ] read a book
+Now you have 1 tasks in the list.
+```
 
 ### Add a deadline: `deadline`
 
@@ -47,6 +92,9 @@ deadline submit report /by 2026-09-20
 deadline pay fees /by 21/9/2026 1700
 ```
 
+The first example is due on 20 September 2026; the second is due at 5 pm on 21 September 2026.
+Sumo confirms each addition and displays its due date, including the time when supplied.
+
 ### Add an event: `event`
 
 Use an event for something with a start and end.
@@ -55,8 +103,10 @@ Use an event for something with a start and end.
 
 ```text
 event project meeting /from 2026-09-20 1400 /to 2026-09-20 1600
+event study camp /from 2026-09-22 /to 2026-09-24
 ```
 
+The meeting runs from 2 pm to 4 pm. The camp demonstrates an event spanning several dates.
 The end must be after the start. For a same-day event, include an end time later than the start.
 Use each parameter (`/by`, or `/from` and `/to`) exactly once in the order shown.
 Other words starting with `/` are reserved in deadline and event commands.
@@ -126,16 +176,28 @@ to the normal view. An empty list produces `No tasks to be sorted.`
 ### End your session: `bye`
 
 Enter `bye` to end the session. In the chat window, input is disabled and you can close the window;
-reopen Sumo to start another session. The console version exits.
+reopen Sumo to start another session.
 
 `list`, `sort`, and `bye` take no extra arguments.
 
-## Saving and troubleshooting
+## Saving your tasks
 
 Tasks are saved automatically after each successful addition, deletion, or status change to
 `data/sumo.txt`, relative to the folder Sumo was launched from. Launch from the same folder each time
 to load the same tasks. You do not need a save command.
 
+The first successful task change creates the data file if it does not exist. To back up your list,
+close Sumo and copy `data/sumo.txt` to a safe location. If you move Sumo to another folder, move
+the `data` folder with it to keep your saved tasks.
+
+## Troubleshooting
+
+- **`java` is not recognised, or the JAR reports a newer Java version is needed?** Install Java 25,
+  reopen the terminal, and check `java -version` before launching again.
+- **`Unable to access jarfile Sumo.jar`?** Open the terminal in the folder containing the download
+  and check that the filename in your command matches the file, including its `.jar` extension.
+- **Your tasks seem to have disappeared?** Check that you launched from your usual folder and
+  that its `data/sumo.txt` is still there.
 - **Command rejected?** Check the spelling, required description, date/time format, and parameter order.
   Task numbers must be positive whole numbers from `list`.
 - **Saving failed?** The attempted change is rolled back. Check the error and that the data folder is
@@ -143,3 +205,24 @@ to load the same tasks. You do not need a save command.
 - **Saved-data warning on startup?** Sumo preserves the original file and disables saving; valid records
   remain viewable when possible. Back up `data/sumo.txt`, repair the reported lines or file permissions,
   and restart Sumo.
+
+## Command reference
+
+Use this table when you need a reminder. Replace uppercase words with your values;
+`[HHmm]` is an optional time.
+
+| Action | Command format |
+| --- | --- |
+| Add an undated task | `todo DESCRIPTION` |
+| Add a due date | `deadline DESCRIPTION /by DATE [HHmm]` |
+| Add a scheduled activity | `event DESCRIPTION /from DATE [HHmm] /to DATE [HHmm]` |
+| Show the full list | `list` |
+| Mark complete | `mark NUMBER` |
+| Mark incomplete | `unmark NUMBER` |
+| Remove a task | `delete NUMBER` |
+| Search descriptions | `find TEXT` |
+| Check a date | `on DATE` |
+| Show tasks chronologically | `sort` |
+| End the chat | `bye` |
+
+Remember: take `NUMBER` from `list`, even if your most recent view was a search or sorted result.

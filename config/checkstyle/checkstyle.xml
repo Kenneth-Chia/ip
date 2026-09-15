@@ -31,8 +31,9 @@
         <module name="CustomImportOrder">
             <property name="customImportOrderRules"
                       value="STATIC###STANDARD_JAVA_PACKAGE###SPECIAL_IMPORTS###THIRD_PARTY_PACKAGE"/>
-            <property name="specialImportsRegExp" value="^org\."/>
-            <property name="thirdPartyPackageRegExp" value="^com\."/>
+            <property name="standardPackageRegExp" value="^(java|javax|jakarta)\."/>
+            <property name="specialImportsRegExp" value="^(org|com|javafx)\."/>
+            <property name="thirdPartyPackageRegExp" value="^(sumo|test)\."/>
             <property name="sortImportsInGroupAlphabetically" value="true"/>
         </module>
         <module name="RedundantImport"/>

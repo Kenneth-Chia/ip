@@ -25,6 +25,7 @@ public class CommandTest {
     @TempDir
     private Path temporaryDirectory;
 
+    /** Verifies that ordinary commands leave the session open. */
     @Test
     public void command_defaultExitState_false() {
         Command command = new ListCommand();
@@ -32,6 +33,7 @@ public class CommandTest {
         assertFalse(command.isExit());
     }
 
+    /** Verifies that exiting displays a farewell and signals the end of the session. */
     @Test
     public void exitCommand_executeAndExitState_goodbyeEmittedAndTrueReturned() throws IOException {
         RecordingUi ui = new RecordingUi();
@@ -43,6 +45,7 @@ public class CommandTest {
         assertTrue(command.isExit());
     }
 
+    /** Verifies that listing displays the current task collection. */
     @Test
     public void listCommand_execute_currentTasksDisplayed() throws IOException {
         Todo todo = new Todo("read");
@@ -53,6 +56,7 @@ public class CommandTest {
         assertEquals(List.of("list:read"), ui.calls);
     }
 
+    /** Verifies that keyword searches display only matching tasks. */
     @Test
     public void findCommand_execute_onlyMatchingTasksDisplayed() throws IOException {
         RecordingUi ui = new RecordingUi();
@@ -63,6 +67,7 @@ public class CommandTest {
         assertEquals(List.of("matches:read book"), ui.calls);
     }
 
+    /** Verifies that date queries display only tasks occurring on the requested date. */
     @Test
     public void onCommand_execute_onlyTasksOnDateDisplayed() throws IOException {
         RecordingUi ui = new RecordingUi();
@@ -74,6 +79,7 @@ public class CommandTest {
         assertEquals(List.of("on:2026-02-03:submit"), ui.calls);
     }
 
+    /** Verifies that sorting selects the empty-state message or the sorted task view. */
     @Test
     public void sortCommand_emptyAndNonEmptyLists_expectedViewSelected() {
         RecordingUi ui = new RecordingUi();
@@ -100,22 +106,22 @@ public class CommandTest {
 
         @Override
         public void showTaskList(List<Task> tasks) {
-            calls.add("list:" + descriptions(tasks));
+            calls.add("list:" + getDescriptions(tasks));
         }
 
         @Override
         public void showMatchingTasks(List<Task> tasks) {
-            calls.add("matches:" + descriptions(tasks));
+            calls.add("matches:" + getDescriptions(tasks));
         }
 
         @Override
         public void showTasksOnDate(java.time.LocalDateTime date, List<Task> tasks) {
-            calls.add("on:" + date.toLocalDate() + ":" + descriptions(tasks));
+            calls.add("on:" + date.toLocalDate() + ":" + getDescriptions(tasks));
         }
 
         @Override
         public void showSortedTaskList(List<Task> tasks) {
-            calls.add("sorted:" + descriptions(tasks));
+            calls.add("sorted:" + getDescriptions(tasks));
         }
 
         @Override
@@ -123,7 +129,8 @@ public class CommandTest {
             calls.add("empty-sort");
         }
 
-        private String descriptions(List<Task> tasks) {
+        /** Returns task descriptions joined in display order for assertions. */
+        private String getDescriptions(List<Task> tasks) {
             return String.join(",", tasks.stream().map(Task::getDescription).toList());
         }
     }

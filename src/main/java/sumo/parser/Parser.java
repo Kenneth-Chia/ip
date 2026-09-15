@@ -209,13 +209,13 @@ public class Parser {
     /** Parses commands that target an existing task or add a new task. */
     private Command parseIndexedOrAddCommand(String command, int taskCount) throws SumoException {
         if (isCommand(command, "mark")) {
-            return indexedCommand(CommandType.MARK, getCommandArgument(command, "mark"), taskCount);
+            return parseIndexedCommand(CommandType.MARK, getCommandArgument(command, "mark"), taskCount);
         }
         if (isCommand(command, "unmark")) {
-            return indexedCommand(CommandType.UNMARK, getCommandArgument(command, "unmark"), taskCount);
+            return parseIndexedCommand(CommandType.UNMARK, getCommandArgument(command, "unmark"), taskCount);
         }
         if (isCommand(command, "delete")) {
-            return indexedCommand(CommandType.DELETE, getCommandArgument(command, "delete"), taskCount);
+            return parseIndexedCommand(CommandType.DELETE, getCommandArgument(command, "delete"), taskCount);
         }
         return parseTaskCreationCommand(command);
     }
@@ -288,7 +288,7 @@ public class Parser {
     }
 
     /** Converts and validates a user-facing one-based task number. */
-    private ParsedCommand indexedCommand(CommandType type, String text, int taskCount) throws SumoException {
+    private ParsedCommand parseIndexedCommand(CommandType type, String text, int taskCount) throws SumoException {
         assert type != null && type != CommandType.ADD
                 : "An indexed command must update an existing task.";
         assert taskCount >= 0 : "The task count cannot be negative.";

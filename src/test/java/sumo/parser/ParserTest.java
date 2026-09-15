@@ -131,7 +131,7 @@ public class ParserTest {
         assertThrows(SumoException.class, () -> parser.parse("deadline report /by 2026-02-03 | extra", 0));
     }
 
-    /** Verifies rejection of unrecognised commands. */
+    /** Verifies rejection of unrecognized commands. */
     @Test
     public void parse_unknownCommand_exceptionThrown() {
         assertThrows(SumoException.class, () -> parser.parse("remind me", 0));

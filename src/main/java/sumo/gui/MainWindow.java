@@ -12,6 +12,7 @@ import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.shape.Circle;
+
 import sumo.Sumo;
 
 /** Controls Sumo's main chat window. */
@@ -37,6 +38,10 @@ public class MainWindow extends AnchorPane {
     private Circle statusRing;
 
     private Sumo sumo;
+
+    /** Creates the chat window controller used by the FXML loader. */
+    public MainWindow() {
+    }
 
     /** Keeps the newest dialog visible when the conversation grows. */
     @FXML

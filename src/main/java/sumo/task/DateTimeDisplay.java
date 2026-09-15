@@ -20,9 +20,9 @@ public final class DateTimeDisplay {
     /**
      * Formats a date and optionally its time.
      *
-     * @param value the value to format
-     * @param hasTime whether the value includes a time
-     * @return the formatted value
+     * @param value the value to format.
+     * @param hasTime whether the value includes a time.
+     * @return the formatted value.
      */
     public static String format(LocalDateTime value, boolean hasTime) {
         return value.format(hasTime ? DATE_TIME_FORMATTER : DATE_FORMATTER);

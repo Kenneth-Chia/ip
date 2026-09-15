@@ -14,7 +14,7 @@ public class OnCommand extends Command {
     /**
      * Creates a date-filtering command.
      *
-     * @param date date whose tasks should be displayed
+     * @param date date whose tasks should be displayed.
      */
     public OnCommand(LocalDate date) {
         this.date = date;

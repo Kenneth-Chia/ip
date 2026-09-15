@@ -16,8 +16,8 @@ import sumo.Sumo;
 
 /** Controls Sumo's main chat window. */
 public class MainWindow extends AnchorPane {
-    private static final String USER_IMAGE_PATH = "/images/DaUser.png";
-    private static final String SUMO_IMAGE_PATH = "/images/DaSumo.png";
+    private static final String USER_IMAGE_PATH = "/images/UserPfp.png";
+    private static final String SUMO_IMAGE_PATH = "/images/SumoPfp.png";
     private static final double SCROLL_SPEED_MULTIPLIER = 1.3;
 
     private final Image userImage = loadImage(USER_IMAGE_PATH);

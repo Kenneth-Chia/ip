@@ -20,8 +20,8 @@ Prerequisites: JDK 25, update Intellij to the most recent version.
    Add your own avatar images at the following paths. The GUI also works while either image is
    missing.
 
-   - `src/main/resources/images/DaUser.png`
-   - `src/main/resources/images/DaSumo.png`
+   - `src/main/resources/images/UserPfp.png`
+   - `src/main/resources/images/SumoPfp.png`
 
    Enter the same commands supported by the console version, such as `todo read book`, `list`,
    `mark 1`, and `bye`. Press **Enter** or click **Send** to submit a command.

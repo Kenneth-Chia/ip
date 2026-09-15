@@ -20,8 +20,8 @@
                text="Label"
                wrapText="true" />
         <ImageView fx:id="displayPicture"
-                   fitHeight="36.0"
-                   fitWidth="36.0"
+                   fitHeight="48.0"
+                   fitWidth="48.0"
                    pickOnBounds="true"
                    preserveRatio="true" />
     </children>

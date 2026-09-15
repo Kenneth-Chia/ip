@@ -14,7 +14,7 @@ Run `.\gradlew.bat run` from the repository root before each test case unless st
 
 ## GUI-002 — Continue without avatar files
 
-Ensure `DaUser.png` and `DaSumo.png` are absent from `src/main/resources/images`, then start the GUI.
+Ensure `UserPfp.png` and `SumoPfp.png` are absent from `src/main/resources/images`, then start the GUI.
 Confirm it starts and accepts commands, with blank avatar areas beside the dialogs.
 
 ## GUI-003 — Keep the newest dialog visible
@@ -38,6 +38,8 @@ file must remain unchanged. Close Sumo and restore the backup after this check.
 
 - Confirm a slate background, cyan triangle, SUMO header, and blue ring with the text Ready.
 - Confirm assistant bubbles have a cyan top border and user bubbles align right.
+- Confirm both profile pictures fit within 48 × 48 pixels, preserve their aspect ratios,
+  and leave a gap beside the message bubbles at the minimum window width.
 - Resize from the minimum 400 × 600 window to a larger window. Send a long task description
   and confirm bubbles wrap, the composer stays visible, and no horizontal scrolling is needed.
 - Use Tab to reach the command field and Send button; confirm visible focus indicators.
